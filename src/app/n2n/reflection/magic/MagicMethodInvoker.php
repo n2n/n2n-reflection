@@ -21,7 +21,7 @@
  */
 namespace n2n\reflection\magic;
 
-use n2n\N2N;
+use n2n\core\N2N;
 use n2n\core\module\Module;
 use n2n\reflection\ReflectionException;
 use n2n\reflection\ReflectionUtils;

@@ -29,7 +29,7 @@ use n2n\core\TypeNotFoundException;
 
 class ReflectionUtils {
 	const COMMON_MAX_CHARS = 100;
-	const ENCODED_NAMESPACE_LEVEL_DEFAULT_SEPARATOR = '.';
+	const ENCODED_NAMESPACE_LEVEL_DEFAULT_SEPARATOR = '-';
 	
 	public static function captureVarDump($expression, $maxChars = self::COMMON_MAX_CHARS) {
 		$outputBuffer = new OutputBuffer();
