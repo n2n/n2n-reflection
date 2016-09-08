@@ -83,11 +83,17 @@ class ReflectionUtils {
 		try {
 			return $parameter->getClass();
 		} catch (\ReflectionException $e) {
+			$tlE = TypeLoader::getLatestException();
+			
+			if ($tlE !== null && $e->getFile() == $tlE->getFile() && $e->getLine() == $tlE->getLine()) {
+				$e = new TypeNotFoundException($tlE->getMessage(), null, $e);
+			}
+			
 			$declaringFunction = $parameter->getDeclaringFunction();
 			throw new ReflectionErrorException('Unkown type defined for parameter: ' . $parameter->getName(),
 					$declaringFunction->getFileName(), $declaringFunction->getStartLine(), null, null, $e);
 			
-			throw new TypeNotFoundException('Unkown type defined for parameter: ' . $parameter->getName(), 0, $e);
+// 			throw new TypeNotFoundException('Unkown type defined for parameter: ' . $parameter->getName(), 0, $e);
 		}
 	}
 	
