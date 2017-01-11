@@ -22,7 +22,6 @@
 namespace n2n\reflection\property;
 
 use n2n\reflection\ReflectionUtils;
-use n2n\core\SysTextUtils;
 
 class PropertiesAnalyzer {
 	private $class;
