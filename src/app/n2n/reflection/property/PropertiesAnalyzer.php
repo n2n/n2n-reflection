@@ -96,13 +96,14 @@ class PropertiesAnalyzer {
 		
 		if ($this->ignoreAccessMethods) {
 			return new PropertyAccessProxy($propertyName, $property, null, null);
-		} 
-		
-		return new PropertyAccessProxy($propertyName, $property,
-				$this->getGetterMethod($propertyName, $property === null 
-						|| (!$property->isPublic() && $gettingRequired), $property),
-				$this->getSetterMethod($propertyName, $property === null 
-						|| (!$property->isPublic() && $settingRequired), $property));
+		}
+
+		$setterMethod = $this->getSetterMethod($propertyName,
+				(($property === null || !$property->isPublic()) && $settingRequired), $property);
+		$getterMethod = $this->getGetterMethod($propertyName, ($property === null && $setterMethod === null)
+				|| (($property === null || !$property->isPublic()) && $gettingRequired), $property);
+
+		return new PropertyAccessProxy($propertyName, $property, $getterMethod, $setterMethod);
 	}
 	
 	private function scoutForPropertyMethods($propertyName) {
