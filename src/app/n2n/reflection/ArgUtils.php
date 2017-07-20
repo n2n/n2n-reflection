@@ -22,10 +22,8 @@
 namespace n2n\reflection;
 
 use n2n\core\N2N;
-use n2n\core\SysTextUtils;
 use n2n\util\col\ArrayUtils;
 use n2n\reflection\property\TypeConstraint;
-use n2n\persistence\ExecutedPdoStatementListener;
 
 class ArgUtils {
 // 	public static function validateEnumArgument($paramNo, array $options, $bti = 1) {
