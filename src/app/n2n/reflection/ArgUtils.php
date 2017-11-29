@@ -21,7 +21,6 @@
  */
 namespace n2n\reflection;
 
-use n2n\core\N2N;
 use n2n\util\col\ArrayUtils;
 use n2n\reflection\property\TypeConstraint;
 

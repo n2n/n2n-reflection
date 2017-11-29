@@ -24,7 +24,7 @@ namespace n2n\reflection;
 abstract class ObjectAdapter {
 	private static $classes = array();
 	/**
-	 * @return EntityClass
+	 * @return \ReflectionClass
 	 */
 	public static function getClass() {
 		$className = get_called_class();

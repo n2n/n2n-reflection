@@ -114,7 +114,7 @@ class ReflectionUtils {
 	}
 	/**
 	 * 
-	 * @param unknown_type $typeName
+	 * @param string $typeName
 	 * @return \ReflectionClass
 	 * @throws TypeNotFoundException
 	 */

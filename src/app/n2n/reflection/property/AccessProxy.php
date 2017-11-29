@@ -36,18 +36,18 @@ interface AccessProxy {
 	 */
 	public function setConstraint(TypeConstraint $constraints);
 	/**
-	 * @param unknown $object
-	 * @param unknown $value
+	 * @param object $object
+	 * @param mixed $value
 	 * @param string $validate
 	 */
 	public function setValue($object, $value, $validate = true);
 	/**
-	 * @param unknown $object
+	 * @param object $object
 	 * @return mixed
 	 */
 	public function getValue($object);
 	/**
-	 * @param unknown $nullReturnAllowed
+	 * @param bool $nullReturnAllowed
 	 */
 	public function setNullReturnAllowed($nullReturnAllowed);
 	/**

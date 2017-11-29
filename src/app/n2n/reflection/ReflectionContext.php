@@ -27,7 +27,7 @@ class ReflectionContext {
 	private static $annotationSets = array();
 	private static $annotationAccessProxies = array();
 	/**
-	 * @param ReflectionClass $class
+	 * @param \ReflectionClass $class
 	 * @return \n2n\reflection\annotation\AnnotationSet
 	 */
 	public static function getAnnotationSet(\ReflectionClass $class) {
