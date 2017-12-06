@@ -40,11 +40,11 @@ class MagicUtils {
 	 * @param object $object
 	 * @param string $methodName
 	 * @param bool $oneRequired
-	 * @param Module $module
+	 * @param MagicContext $magicContext
 	 * @throws ReflectionErrorException
 	 */
-	public static function callMethodHierarchy(\ReflectionClass $class, $object, $methodName, 
-			$oneRequired, MagicContext $magicContext = null) {
+	public static function callMethodHierarchy(\ReflectionClass $class, $object, string $methodName, 
+			bool $oneRequired, MagicContext $magicContext = null) {
 		$methods = ReflectionUtils::extractMethodHierarchy($class, $methodName);
 		if ($oneRequired && !sizeof($methods)) {
 			throw new ReflectionErrorException('Magic method missing: ' . $class->getName() . '::' 
@@ -92,7 +92,7 @@ class MagicUtils {
 	/**
 	 *
 	 * @param \Closure $closure
-	 * @param TypeConstraint $returnConstraints
+	 * @param MagicContext $magicContext
 	 * @throws ReflectionErrorException
 	 */
 	public function callMagicClosure(\Closure $closure, MagicContext $magicContext = null) {

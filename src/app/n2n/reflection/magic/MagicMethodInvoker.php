@@ -51,7 +51,7 @@ class MagicMethodInvoker {
 		$this->method = $method;
 	}
 	/**
-	 * @return ReflectionFunctionAbstract
+	 * @return \ReflectionFunctionAbstract
 	 */
 	public function getMethod() {
 		return $this->method;
@@ -185,7 +185,7 @@ class CanNotFillParameterException extends ReflectionException {
 	 * @param \ReflectionParameter $parameter
 	 * @param string $message
 	 * @param string $code
-	 * @param Exception $previous
+	 * @param \Exception $previous
 	 */
 	public function __construct(\ReflectionParameter $parameter, $message, $code = 0, \Exception $previous = null) {
 		parent::__construct($message, $code, $previous);

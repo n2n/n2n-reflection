@@ -30,11 +30,10 @@ class PropertiesAnalyzer {
 	/**
 	 * 
 	 * @param \ReflectionClass $class
-	 * @param unknown_type $lenient
-	 * @param unknown_type $readable
-	 * @param unknown_type $writable
+	 * @param bool $ignoreAccessMethods
+	 * @param bool $superIgnored
 	 */
-	public function __construct(\ReflectionClass $class, $ignoreAccessMethods = false, $superIgnored = true) {
+	public function __construct(\ReflectionClass $class, bool $ignoreAccessMethods = false, bool $superIgnored = true) {
 		$this->class = $class;
 		$this->ignoreAccessMethods = $ignoreAccessMethods;
 		$this->superIgnored = $superIgnored;

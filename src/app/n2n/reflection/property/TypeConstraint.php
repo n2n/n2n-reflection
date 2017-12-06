@@ -31,7 +31,7 @@ class TypeConstraint {
 	private $arrayFieldTypeConstraint;
 	private $whitelistTypes;
 	/**
-	 * @param unknown $typeName
+	 * @param string $typeName
 	 * @param string $allowsNull
 	 * @param TypeConstraint $arrayFieldTypeConstraints
 	 * @param array $whitelistTypes
@@ -109,7 +109,7 @@ class TypeConstraint {
 		return true;
 	}
 	/**
-	 * @param unknown $value
+	 * @param mixed $value
 	 * @throws ValueIncompatibleWithConstraintsException
 	 */
 	public function validate($value) {
