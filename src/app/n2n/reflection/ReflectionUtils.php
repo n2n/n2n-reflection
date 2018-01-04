@@ -192,7 +192,9 @@ class ReflectionUtils {
 		$typeName = preg_replace('/((?<=[a-z0-9])[A-Z]|(?<=.)[A-Z](?=[a-z]))/', ' ${0}', (string) $typeName);
 		
 		$typeName = preg_replace_callback('/_./',
-				create_function('$treffer', 'return \' \' . mb_strtoupper($treffer[0][1]);'), $typeName);
+				function ($treffer) {
+					return ' ' . mb_strtoupper($treffer[0][1]);
+				}, $typeName);
 		
 		$typeName = str_replace(array('[', ']'), array(' (', ')'), $typeName);
 		
