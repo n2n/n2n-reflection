@@ -315,7 +315,9 @@ class ReflectionUtils {
  		return $time;
  	}
  	
- 	
+ 	public static function atuschTime() {
+ 		return self::$time;
+ 	}
  	
  	
  	/**
