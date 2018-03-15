@@ -299,12 +299,24 @@ class ReflectionUtils {
  	}
  	
  	private static $timeStarts = array();
+ 	private static $time = 0;
+ 	
  	public static function atuschStart() {
  		self::$timeStarts[] = microtime(true);
  	}
  	
  	public static function atuschEnd() {
- 		return microtime(true) - array_pop(self::$timeStarts);
+ 		$time =  microtime(true) - array_pop(self::$timeStarts);
+ 		
+ 		if (empty(self::$timeStarts)) {
+ 			self::$time += $time;
+ 		}
+ 		
+ 		return $time;
+ 	}
+ 	
+ 	public static function atuschTime() {
+ 		return self::$time;
  	}
  	
  	
