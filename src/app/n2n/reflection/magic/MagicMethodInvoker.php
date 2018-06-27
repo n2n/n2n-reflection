@@ -173,7 +173,7 @@ class MagicMethodInvoker {
 		if ($method instanceof \ReflectionMethod) {
 			return $method->invokeArgs($object, $this->buildArgs($method));
 		} else if ($method->isClosure()) {
-			call_user_func(
+			return call_user_func(
 					\Closure::bind(
 							$method->getClosure(),
 							$method->getClosureThis(),
