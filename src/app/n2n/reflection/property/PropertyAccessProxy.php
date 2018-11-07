@@ -197,7 +197,7 @@ class PropertyAccessProxy implements AccessProxy {
 			} catch (\ReflectionException $e) {
 				throw new PropertyAccessException('Could not get value of property '
 								.  $this->property->getDeclaringClass()->getName() . '::$' 
-						. $this->property->getName(), 0, $e);
+						. $this->property->getName() . ' (Read from object type ' . get_class($object) . ')', 0, $e);
 			}
 		} else {
 			$getterMethod = $this->findMethod($object, $this->getterMethod);
