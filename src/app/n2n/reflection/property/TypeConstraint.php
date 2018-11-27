@@ -242,7 +242,7 @@ class TypeConstraint {
 	
 	public static function createArrayLike($type, bool $allowsNull = true, TypeConstraint $arrayFieldTypeConstraints = null, 
 			array $whitelistTypes = array()) {
-				return new TypeConstraint(self::buildTypeName($type), $allowsNull, $arrayFieldTypeConstraints, $whitelistTypes);
+		return new TypeConstraint(self::buildTypeName($type), $allowsNull, $arrayFieldTypeConstraints, $whitelistTypes);
 	}
 	
 	public static function isValueA($value, $expectedType, bool $nullAllowed): bool {
