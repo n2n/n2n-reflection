@@ -24,6 +24,7 @@ namespace n2n\reflection\property;
 use n2n\reflection\ReflectionUtils;
 use n2n\util\col\ArrayUtils;
 use n2n\util\ex\IllegalStateException;
+use n2n\util\type\TypeUtils;
 
 class TypeConstraint {	
 	private $typeName;
@@ -154,7 +155,7 @@ class TypeConstraint {
 		throw new ValueIncompatibleWithConstraintsException(
 				'Value type not allowed with constraints. Required type: '
 				. $this->__toString() . '; Given type: '
-				. ReflectionUtils::getTypeInfo($value));
+				. TypeUtils::getTypeInfo($value));
 	}
 	
 	public function isEmpty() {
@@ -233,7 +234,7 @@ class TypeConstraint {
 		
 		throw new \InvalidArgumentException(
 				'Invalid type parameter passed for TypeConstraint (Allowed: string, ReflectionClass): ' 
-						. ReflectionUtils::getTypeInfo($type));
+						. TypeUtils::getTypeInfo($type));
 	}
 	
 	public static function createSimple($type, bool $allowsNull = true, array $whitelistTypes = array()) {

@@ -27,6 +27,8 @@ use n2n\reflection\ReflectionException;
 use n2n\reflection\ReflectionUtils;
 use n2n\util\ex\IllegalStateException;
 use n2n\core\TypeNotFoundException;
+use n2n\util\magic\MagicContext;
+use n2n\util\magic\MagicObjectUnavailableException;
 
 class MagicMethodInvoker {
 	private $magicContext;
