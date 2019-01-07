@@ -23,13 +23,10 @@ namespace n2n\reflection;
 
 use n2n\core\TypeLoader;
 use n2n\io\ob\OutputBuffer;
-use n2n\util\StringUtils;
 use n2n\reflection\annotation\Annotation;
 use n2n\core\TypeNotFoundException;
 
 class ReflectionUtils {
-	const COMMON_MAX_CHARS = 100;
-	const ENCODED_NAMESPACE_LEVEL_DEFAULT_SEPARATOR = '-';
 	
 	public static function captureVarDump($expression, $maxChars = self::COMMON_MAX_CHARS) {
 		$outputBuffer = new OutputBuffer();
@@ -55,28 +52,6 @@ class ReflectionUtils {
 		}
 			
 		throw new \InvalidArgumentException();
-	}
-	
-	public static function buildUsefullValueIdentifier($value, $maxChars = self::COMMON_MAX_CHARS) {
-		if (is_scalar($value)) {
-			return mb_substr($value, 0, (int) $maxChars);
-		}
-		return self::getTypeInfo($value);
-	}
-	
-	public static function getTypeInfo($value) {
-		if (is_object($value)) {
-			return get_class($value);	
-		}
-		return gettype($value);
-	}
-	
-	public static function buildScalar($value) {
-		if (is_scalar($value)) {
-			return $value;
-		}
-		
-		return self::getTypeInfo($value);
 	}
 	
 	public static function extractParameterClass(\ReflectionParameter $parameter) {
@@ -178,116 +153,15 @@ class ReflectionUtils {
 		return /*is_object($object) &&*/ $isAClass !== null && is_a($object, $isAClass->getName());
 	}
 	
+	// 	public static function unserialize($serializedStr) {
+	// 		$obj = @unserialize($serializedStr);
 	
-		
-	public static function buildTypeAcronym($typeName) {
-		if (preg_match_all('/[A-Z0-9]+/', $typeName, $matches)) {
-			return strtolower(implode('', $matches[0]));
-		}
-		
-		return null;
-	}
+	// 		if ($obj === false && $err = error_get_last()) {
+	// 			throw new ReflectionException($err['message']);
+	// 		}
 	
-	public static function prettyName($typeName) {
-		$typeName = preg_replace('/((?<=[a-z0-9])[A-Z]|(?<=.)[A-Z](?=[a-z]))/', ' ${0}', (string) $typeName);
-		
-		$typeName = preg_replace_callback('/_./',
-				function ($treffer) {
-					return ' ' . mb_strtoupper($treffer[0][1]);
-				}, $typeName);
-		
-		$typeName = str_replace(array('[', ']'), array(' (', ')'), $typeName);
-		
-		return ucfirst($typeName);
-	}
-	
-	public static function prettyClassPropName(\ReflectionClass $class, $propertyName) {
-		return self::prettyPropName($class->getName(), $propertyName);
-	}
-	
-	public static function prettyPropName($className, $propertyName) {
-		if ($className instanceof \ReflectionClass) {
-			$className = $className->getName();
-		}
-		return $className . '::$' . $propertyName;
-	}
-	
-	public static function prettyReflPropName(\ReflectionProperty $property) {
-		return self::prettyPropName($property->getDeclaringClass()->getName(), $property->getName());
-	}
-	
-	public static function prettyMethName($className, $methodName) {
-		return $className . '::' . $methodName . '()';
-	}
-	
-	public static function prettyClassMethName(\ReflectionClass $class, $methodName) {
-		return self::prettyMethName($class->getName(), $methodName);
-	}
-	
-	public static function prettyReflMethName(\ReflectionFunctionAbstract $method) {
-		if ($method instanceof \ReflectionMethod) {
-			return self::prettyMethName($method->getDeclaringClass()->getName(), $method->getName());
-		}
-		
-		return $method->getName() . '()';		
-	}
-	
-	public static function prettyValue($value, $maxChars = self::COMMON_MAX_CHARS) {
-		if (is_scalar($value)) {
-			return StringUtils::reduce($value, $maxChars);
-		}
-		
-		return self::getTypeInfo($value);
-	} 
-	
-	/**
-	 * 
-	 * @param string $string
-	 * @return string
-	 */
-	public static function stripSpecialChars($string) {
-		return preg_replace('/[^0-9a-zA-Z_]/', '', $string);
- 	}
- 	
- 	public static function encodeNamespace($namespace, $namespaceLevelSepartor = self::ENCODED_NAMESPACE_LEVEL_DEFAULT_SEPARATOR) {
- 		if (ReflectionUtils::hasSpecialChars($namespace, false)) {
- 			throw new \InvalidArgumentException('Invalid namespace: ' . $namespace);
- 		}
- 		
- 		return str_replace('\\', $namespaceLevelSepartor, trim((string) $namespace, '\\'));
- 	}
- 	
- 	public static function decodeNamespace($encodedNamespace, $namespaceLevelSepartor = self::ENCODED_NAMESPACE_LEVEL_DEFAULT_SEPARATOR) {
- 		$namespace = str_replace($namespaceLevelSepartor, '\\', trim((string) $encodedNamespace, self::ENCODED_NAMESPACE_LEVEL_DEFAULT_SEPARATOR));
- 		
- 		if (ReflectionUtils::hasSpecialChars($namespace, false)) {
- 			throw new \InvalidArgumentException('Invalid namespace: ' . $namespace);
- 		}
- 		
- 		return $namespace;
- 	}
- 	/**
- 	 * 
- 	 * @param string $string
- 	 * @return bool
- 	 */
- 	public static function hasSpecialChars($string, $treatSeparatorAsSpecial = true) {
- 		return preg_match('/[^0-9a-zA-Z_' . ($treatSeparatorAsSpecial ? '' : '\\\\') . ']/', $string);
- 	}
- 	
- 	public static function unserialize($serializedStr) {
- 		$obj = @unserialize($serializedStr);
- 		
- 		if ($obj === false && $err = error_get_last()) {
- 			throw new ReflectionException($err['message']);
- 		}
- 	
- 		return $obj;
- 	}
- 	
- 	public static function purifyNamespace($namespace) {
- 		return trim(str_replace('/', '\\', $namespace), '\\');
- 	}
+	// 		return $obj;
+	// 	}
  	
  	private static $times = 0;
  	public static function atuschBreak($maxtimes) {

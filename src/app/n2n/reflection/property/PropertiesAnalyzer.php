@@ -22,6 +22,7 @@
 namespace n2n\reflection\property;
 
 use n2n\reflection\ReflectionUtils;
+use n2n\util\type\TypeUtils;
 
 class PropertiesAnalyzer {
 	private $class;
@@ -122,7 +123,7 @@ class PropertiesAnalyzer {
 			throw new InaccessiblePropertyException($property, 'Getter method (' 
 					. $getterMethodName . ' or ' . $testMethodName 
 					. ') for inaccessible property required: ' 
-					. ReflectionUtils::prettyClassPropName($this->class, $propertyName));
+					. TypeUtils::prettyClassPropName($this->class, $propertyName));
 		} else {
 			return null;
 		}

@@ -23,6 +23,7 @@ namespace n2n\reflection\magic;
 
 use n2n\reflection\ReflectionUtils;
 use n2n\reflection\ReflectionErrorException;
+use n2n\util\magic\MagicContext;
 
 class MagicUtils {
 	const MAGIC_INIT_METHOD = '_init';

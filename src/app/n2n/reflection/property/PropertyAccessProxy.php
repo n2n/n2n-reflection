@@ -22,7 +22,8 @@
 namespace n2n\reflection\property;
 
 use n2n\reflection\ReflectionUtils;
-use n2n\reflection\ArgUtils;
+use n2n\util\type\ArgUtils;
+use n2n\util\type\TypeUtils;
 
 class PropertyAccessProxy implements AccessProxy {
 	private $propertyName;
@@ -246,7 +247,7 @@ class PropertyAccessProxy implements AccessProxy {
 	
 	public function __toString(): string {
 		if ($this->isPropertyAccessGetterMode() && $this->isPropertyAccessSetterMode()) {
-			return 'AccessProxy [' . ($this->property !== null ? ReflectionUtils::prettyReflPropName($this->property) 
+			return 'AccessProxy [' . ($this->property !== null ? TypeUtils::prettyReflPropName($this->property) 
 					: ReflectionUtils::prettyPropName('<unknown class>', $this->propertyName) . ']');
 		}
 		
