@@ -24,6 +24,7 @@ namespace n2n\reflection\magic;
 use n2n\reflection\ReflectionUtils;
 use n2n\reflection\ReflectionErrorException;
 use n2n\util\magic\MagicContext;
+use n2n\util\type\TypeUtils;
 
 class MagicUtils {
 	const MAGIC_INIT_METHOD = '_init';
@@ -75,7 +76,7 @@ class MagicUtils {
 	public static function validateMagicMethodSignature(\ReflectionMethod $method) {
 		if (!$method->isPrivate() || $method->isStatic() || $method->isAbstract()) {
 			throw new ReflectionErrorException('Invalid magic method signature of method ' 
-							. ReflectionUtils::prettyReflMethName($method) 
+							. TypeUtils::prettyReflMethName($method) 
 							. '. Required signature: private function ' . $method->getName() . '();',
 					$method->getFileName(), $method->getStartLine());
 		}

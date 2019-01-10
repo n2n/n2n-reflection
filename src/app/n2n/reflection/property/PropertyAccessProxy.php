@@ -235,7 +235,7 @@ class PropertyAccessProxy implements AccessProxy {
 	}
 	
 	public function createMethodInvokeException(\ReflectionMethod $method, \Exception $previous, $object = null) {
-		$message = 'Reflection execution of ' . ReflectionUtils::prettyReflMethName($method). ' failed.';
+		$message = 'Reflection execution of ' . TypeUtils::prettyReflMethName($method). ' failed.';
 				
 		if ($object !== null && !ReflectionUtils::isObjectA($object, $method->getDeclaringClass())) {
 			$message .= ' Reason: Type of ' . get_class($object) . ' passed as object, type of ' 
@@ -253,10 +253,10 @@ class PropertyAccessProxy implements AccessProxy {
 		
 		$strs = array();
 		if ($this->getterMethod !== null) {
-			$strs[] = ReflectionUtils::prettyReflMethName($this->getterMethod);
+			$strs[] = TypeUtils::prettyReflMethName($this->getterMethod);
 		}
 		if ($this->setterMethod !== null) {
-			$strs[] = ReflectionUtils::prettyReflMethName($this->setterMethod);
+			$strs[] = TypeUtils::prettyReflMethName($this->setterMethod);
 		}
 		
 		return 'AccessProxy [' . implode(', ', $strs) . ']';
