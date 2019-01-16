@@ -24,6 +24,8 @@ namespace n2n\reflection\property;
 use n2n\reflection\ReflectionUtils;
 use n2n\util\type\ArgUtils;
 use n2n\util\type\TypeUtils;
+use n2n\util\type\TypeConstraint;
+use n2n\util\type\ValueIncompatibleWithConstraintsException;
 
 class PropertyAccessProxy implements AccessProxy {
 	private $propertyName;
@@ -91,7 +93,7 @@ class PropertyAccessProxy implements AccessProxy {
 	}
 	/**
 	 *
-	 * @return \n2n\reflection\property\TypeConstraint
+	 * @return \n2n\util\type\TypeConstraint
 	 */
 	public function getConstraint() {
 		return $this->constraint;
