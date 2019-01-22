@@ -250,7 +250,7 @@ class PropertyAccessProxy implements AccessProxy {
 	public function __toString(): string {
 		if ($this->isPropertyAccessGetterMode() && $this->isPropertyAccessSetterMode()) {
 			return 'AccessProxy [' . ($this->property !== null ? TypeUtils::prettyReflPropName($this->property) 
-					: ReflectionUtils::prettyPropName('<unknown class>', $this->propertyName) . ']');
+					: TypeUtils::prettyPropName('<unknown class>', $this->propertyName) . ']');
 		}
 		
 		$strs = array();
