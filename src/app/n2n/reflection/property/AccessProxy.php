@@ -21,6 +21,8 @@
  */
 namespace n2n\reflection\property;
 
+use n2n\util\type\TypeConstraint;
+
 interface AccessProxy {
 	/**
 	 * @return string 

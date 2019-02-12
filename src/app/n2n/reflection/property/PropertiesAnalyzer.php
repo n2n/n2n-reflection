@@ -23,6 +23,7 @@ namespace n2n\reflection\property;
 
 use n2n\reflection\ReflectionUtils;
 use n2n\util\type\TypeUtils;
+use n2n\util\type\TypeConstraint;
 
 class PropertiesAnalyzer {
 	private $class;
@@ -160,7 +161,7 @@ class PropertiesAnalyzer {
 			if (!$required) return null;
 			
 			throw new InaccessiblePropertyException($property, 
-					'Managed property setter method required: ' . ReflectionUtils::prettyClassMethName($this->class, $setterMethodName));
+					'Managed property setter method required: ' . TypeUtils::prettyClassMethName($this->class, $setterMethodName));
 		}
 	
 		$setterMethod = $this->class->getMethod($setterMethodName);
@@ -169,7 +170,7 @@ class PropertiesAnalyzer {
 			
 			throw new InvalidPropertyAccessMethodException($setterMethod, 
 					'Managed property setter method must have public visibility: ' 
-							. ReflectionUtils::prettyReflMethName($setterMethod));
+							. TypeUtils::prettyReflMethName($setterMethod));
 		}
 	
 		$parameters = $setterMethod->getParameters();
@@ -177,14 +178,14 @@ class PropertiesAnalyzer {
 			if($key > 0 && !$parameter->isOptional()) {
 				throw new InvalidPropertyAccessMethodException($setterMethod,
 						'Managed property setter method allows only one non optional parameter: '
-								. ReflectionUtils::prettyReflMethName($setterMethod));
+								. TypeUtils::prettyReflMethName($setterMethod));
 			}
 		}
 		
 		if (!sizeof($parameters)) {
 			throw new InvalidPropertyAccessMethodException($setterMethod, 
 						'Managed property setter method requires parameter: '
-								. ReflectionUtils::prettyReflMethName($setterMethod));
+								. TypeUtils::prettyReflMethName($setterMethod));
 		}
 	
 		return $setterMethod;

@@ -29,6 +29,7 @@ use n2n\util\ex\IllegalStateException;
 use n2n\core\TypeNotFoundException;
 use n2n\util\magic\MagicContext;
 use n2n\util\magic\MagicObjectUnavailableException;
+use n2n\util\type\TypeUtils;
 
 class MagicMethodInvoker {
 	private $magicContext;
@@ -143,7 +144,7 @@ class MagicMethodInvoker {
 			}
 			
 			$eMsg = 'Can not fill parameter \'' . $parameter->getName() . '\' of magic method '
-					. ReflectionUtils::prettyReflMethName($method) . '.';
+					. TypeUtils::prettyReflMethName($method) . '.';
 			
 			if (!empty($this->classParamObjects)) {
 				$eMsg .= ' Available magic param types: ' . implode(', ', array_keys($this->classParamObjects));

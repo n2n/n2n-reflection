@@ -24,6 +24,8 @@ namespace n2n\reflection\property;
 use n2n\reflection\ReflectionUtils;
 use n2n\util\type\ArgUtils;
 use n2n\util\type\TypeUtils;
+use n2n\util\type\TypeConstraint;
+use n2n\util\type\ValueIncompatibleWithConstraintsException;
 
 class PropertyAccessProxy implements AccessProxy {
 	private $propertyName;
@@ -91,7 +93,7 @@ class PropertyAccessProxy implements AccessProxy {
 	}
 	/**
 	 *
-	 * @return \n2n\reflection\property\TypeConstraint
+	 * @return \n2n\util\type\TypeConstraint
 	 */
 	public function getConstraint() {
 		return $this->constraint;
@@ -235,7 +237,7 @@ class PropertyAccessProxy implements AccessProxy {
 	}
 	
 	public function createMethodInvokeException(\ReflectionMethod $method, \Exception $previous, $object = null) {
-		$message = 'Reflection execution of ' . ReflectionUtils::prettyReflMethName($method). ' failed.';
+		$message = 'Reflection execution of ' . TypeUtils::prettyReflMethName($method). ' failed.';
 				
 		if ($object !== null && !ReflectionUtils::isObjectA($object, $method->getDeclaringClass())) {
 			$message .= ' Reason: Type of ' . get_class($object) . ' passed as object, type of ' 
@@ -248,15 +250,15 @@ class PropertyAccessProxy implements AccessProxy {
 	public function __toString(): string {
 		if ($this->isPropertyAccessGetterMode() && $this->isPropertyAccessSetterMode()) {
 			return 'AccessProxy [' . ($this->property !== null ? TypeUtils::prettyReflPropName($this->property) 
-					: ReflectionUtils::prettyPropName('<unknown class>', $this->propertyName) . ']');
+					: TypeUtils::prettyPropName('<unknown class>', $this->propertyName) . ']');
 		}
 		
 		$strs = array();
 		if ($this->getterMethod !== null) {
-			$strs[] = ReflectionUtils::prettyReflMethName($this->getterMethod);
+			$strs[] = TypeUtils::prettyReflMethName($this->getterMethod);
 		}
 		if ($this->setterMethod !== null) {
-			$strs[] = ReflectionUtils::prettyReflMethName($this->setterMethod);
+			$strs[] = TypeUtils::prettyReflMethName($this->setterMethod);
 		}
 		
 		return 'AccessProxy [' . implode(', ', $strs) . ']';
