@@ -30,7 +30,6 @@ class PropertiesAnalyzer {
 	private $ignoreAccessMethods;
 	private $superIgnored;
 	/**
-	 * 
 	 * @param \ReflectionClass $class
 	 * @param bool $ignoreAccessMethods
 	 * @param bool $superIgnored
@@ -39,6 +38,13 @@ class PropertiesAnalyzer {
 		$this->class = $class;
 		$this->ignoreAccessMethods = $ignoreAccessMethods;
 		$this->superIgnored = $superIgnored;
+	}
+	
+	/**
+	 * @return \ReflectionClass
+	 */
+	public function getClass() {
+		return $this->class;
 	}
 	
 	public function setSuperIgnored($superIgnored) {
@@ -52,6 +58,7 @@ class PropertiesAnalyzer {
 	private function isFromThisClass($property) {
 		return $property->getDeclaringClass()->getName() == $this->class->getName(); 
 	}
+	
 	/**
 	 * @param bool $includePrivate
 	 * @param bool $checkIfAcessable
