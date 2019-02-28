@@ -30,6 +30,8 @@ use n2n\core\TypeNotFoundException;
 use n2n\util\magic\MagicContext;
 use n2n\util\magic\MagicObjectUnavailableException;
 use n2n\util\type\TypeUtils;
+use n2n\util\type\TypeConstraint;
+use n2n\reflection\ReflectionErrorException;
 
 class MagicMethodInvoker {
 	private $magicContext;
@@ -37,6 +39,10 @@ class MagicMethodInvoker {
 	private $method;
 	private $classParamObjects = array();
 	private $paramValues = array();
+	/**
+	 * @var \n2n\util\type\TypeConstraint|null
+	 */
+	private $returnTypeConstraint = null;
 	
 	/**
 	 * 
@@ -100,6 +106,21 @@ class MagicMethodInvoker {
 		
 		return null;
 	}
+	
+	/**
+	 * @param TypeConstraint $typeConstraint
+	 */
+	public function setReturnTypeConstraint(?TypeConstraint $typeConstraint) {
+		$this->returnTypeConstraint = $typeConstraint;
+	}
+	
+	/**
+	 * @return \n2n\util\type\TypeConstraint|null
+	 */
+	public function getReturnTypeConstraint() {
+		return $this->returnTypeConstraint;
+	}
+	
 	/**
 	 * 
 	 * @throws CanNotFillParameterException
@@ -173,18 +194,38 @@ class MagicMethodInvoker {
 			throw new IllegalStateException('No method defined.');
 		}
 		
+		$returnValue = null;
 		if ($method instanceof \ReflectionMethod) {
-			return $method->invokeArgs($object, $this->buildArgs($method));
+			$returnValue = $method->invokeArgs($object, $this->buildArgs($method));
 		} else if ($method->isClosure()) {
-			return call_user_func(
+			$returnValue = call_user_func(
 					\Closure::bind(
 							$method->getClosure(),
 							$method->getClosureThis(),
 							$method->getClosureScopeClass()->name),
 					...$this->buildArgs($method));
 		} else {
-			return $method->invokeArgs($this->buildArgs($method));
+			$returnValue = $method->invokeArgs($this->buildArgs($method));
 		}
+		
+		$this->valReturn($method, $returnValue);
+		
+		return $returnValue;
+	}
+	
+	/**
+	 * @param \ReflectionFunctionAbstract
+	 * @param mixed|null $value
+	 */
+	private function valReturn($method, $value) {
+		if ($this->returnTypeConstraint === null
+				|| $this->returnTypeConstraint->isValueValid($value)) {
+			return;
+		}
+		
+		throw new ReflectionErrorException(TypeUtils::prettyReflMethName($method) . ' must return ' 
+						. $this->returnTypeConstraint . '. '.  TypeUtils::getTypeInfo($value) . ' returned.',
+				$method->getFileName(), $method->getStartLine());
 	}
 }
 
