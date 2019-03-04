@@ -29,14 +29,14 @@ interface AccessProxy {
 	 */
 	public function getPropertyName(): string;
 	/**
-	 * @return TypeConstraint null if no constraints assigned
+	 * @return TypeConstraint
 	 */
-	public function getConstraint();
+	public function getConstraint(): TypeConstraint;
 	/**
-	 * @param TypeConstraint $constraints
+	 * @param TypeConstraint $constraint
 	 * @throws ConstraintsConflictException
 	 */
-	public function setConstraint(TypeConstraint $constraints);
+	public function setConstraint(TypeConstraint $constraint);
 	/**
 	 * @param object $object
 	 * @param mixed $value

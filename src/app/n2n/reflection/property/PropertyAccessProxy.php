@@ -95,7 +95,7 @@ class PropertyAccessProxy implements AccessProxy {
 	 *
 	 * @return \n2n\util\type\TypeConstraint
 	 */
-	public function getConstraint() {
+	public function getConstraint(): TypeConstraint {
 		return $this->constraint;
 	}
 
@@ -164,7 +164,7 @@ class PropertyAccessProxy implements AccessProxy {
 	public function setValue($object, $value, $validate = true) {
 		if (isset($this->constraint) && $validate) {
 			try {
-				$this->constraint->validate($value);
+				$value = $this->constraint->validate($value);
 			} catch (ValueIncompatibleWithConstraintsException $e) {
 				throw $this->createPassedValueException($e);
 			}
@@ -214,7 +214,7 @@ class PropertyAccessProxy implements AccessProxy {
 		if ($value === null && $this->nullReturnAllowed) return $value;
 		
 		try {
-			$this->constraint->validate($value);
+			$value = $this->constraint->validate($value);
 		} catch (ValueIncompatibleWithConstraintsException $e) {
 			throw $this->createReturnedValueException($e);
 		}
