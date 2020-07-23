@@ -54,6 +54,11 @@ class ReflectionUtils {
 		throw new \InvalidArgumentException();
 	}
 	
+	/**
+	 * @param \ReflectionParameter $parameter
+	 * @throws ReflectionErrorException
+	 * @return \ReflectionClass
+	 */
 	public static function extractParameterClass(\ReflectionParameter $parameter) {
 		try {
 			return $parameter->getClass();

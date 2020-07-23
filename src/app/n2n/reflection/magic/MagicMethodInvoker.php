@@ -65,19 +65,19 @@ class MagicMethodInvoker {
 	public function getMethod() {
 		return $this->method;
 	}
-	/**
-	 * @return Module
-	 */
-	private function getModule() {
-		if (is_null($this->module)) {
-			$namespaceName = $this->method->getNamespaceName();
-			if ($this->method instanceof \ReflectionMethod) {
-				$namespaceName = $this->method->getDeclaringClass()->getNamespaceName();
-			}
-			$this->module = N2N::getModuleOfTypeName($namespaceName);
-		}
-		return $this->module;
-	}
+// 	/**
+// 	 * @return Module
+// 	 */
+// 	private function getModule() {
+// 		if (is_null($this->module)) {
+// 			$namespaceName = $this->method->getNamespaceName();
+// 			if ($this->method instanceof \ReflectionMethod) {
+// 				$namespaceName = $this->method->getDeclaringClass()->getNamespaceName();
+// 			}
+// 			$this->module = N2N::getModuleOfTypeName($namespaceName);
+// 		}
+// 		return $this->module;
+// 	}
 	
 	public function setModule(Module $module) {
 		$this->module = $module;
@@ -126,9 +126,14 @@ class MagicMethodInvoker {
 	 * @throws CanNotFillParameterException
 	 * @return array
 	 */
-	public function buildArgs(\ReflectionFunctionAbstract $method) {
+	public function buildArgs(\ReflectionFunctionAbstract $method, array $firstArgs) {
 		$args = array();
 		foreach ($method->getParameters() as $parameter) {
+			if (!empty($firstArgs)) {
+				$args[] = array_shift($firstArgs);
+				continue;
+			}
+			
 			$parameterName = $parameter->getName();
 			if (array_key_exists($parameterName, $this->paramValues)) {
 				$args[] = $this->paramValues[$parameterName];
@@ -183,9 +188,9 @@ class MagicMethodInvoker {
 	/**
 	 * 
 	 * @param object $object
-	 * @return mixed
+	 * @return mixed|null
 	 */	
-	public function invoke($object = null, \ReflectionFunctionAbstract $method = null) {
+	public function invoke($object = null, \ReflectionFunctionAbstract $method = null, array $firstArgs = []) {
 		if ($method === null) {
 			$method = $this->method;
 		}
@@ -196,16 +201,16 @@ class MagicMethodInvoker {
 		
 		$returnValue = null;
 		if ($method instanceof \ReflectionMethod) {
-			$returnValue = $method->invokeArgs($object, $this->buildArgs($method));
+			$returnValue = $method->invokeArgs($object, $this->buildArgs($method, $firstArgs));
 		} else if ($method->isClosure()) {
 			$returnValue = call_user_func(
 					\Closure::bind(
 							$method->getClosure(),
 							$method->getClosureThis(),
 							$method->getClosureScopeClass()->name),
-					...$this->buildArgs($method));
+					...$this->buildArgs($method, $firstArgs));
 		} else {
-			$returnValue = $method->invokeArgs($this->buildArgs($method));
+			$returnValue = $method->invokeArgs($this->buildArgs($method, $firstArgs));
 		}
 		
 		$this->valReturn($method, $returnValue);
