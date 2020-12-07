@@ -60,20 +60,17 @@ class ReflectionUtils {
 	 * @return \ReflectionClass
 	 */
 	public static function extractParameterClass(\ReflectionParameter $parameter) {
+		$type = $parameter->getType();
+		if ($type === null || $type->isBuiltin()) {
+			return null;
+		}
+		
 		try {
-			return $parameter->getClass();
-		} catch (\ReflectionException $e) {
-			$tlE = TypeLoader::getLatestException();
-			
-			if ($tlE !== null && $e->getFile() == $tlE->getFile() && $e->getLine() == $tlE->getLine()) {
-				$e = new TypeNotFoundException($tlE->getMessage(), null, $e);
-			}
-			
+			return ReflectionUtils::createReflectionClass($type->getName());
+		} catch (TypeNotFoundException $e) {
 			$declaringFunction = $parameter->getDeclaringFunction();
 			throw new ReflectionErrorException('Unkown type defined for parameter: ' . $parameter->getName(),
-					$declaringFunction->getFileName(), $declaringFunction->getStartLine(), null, null, $e);
-			
-// 			throw new TypeNotFoundException('Unkown type defined for parameter: ' . $parameter->getName(), 0, $e);
+					$declaringFunction->getFileName(), $declaringFunction->getStartLine());
 		}
 	}
 	
@@ -167,6 +164,14 @@ class ReflectionUtils {
 	
 	// 		return $obj;
 	// 	}
+	
+	/**
+	 * @param \ReflectionParameter $parameter
+	 * @return boolean
+	 */
+	static function isArrayParameter(\ReflectionParameter $parameter) {
+		return null !== $parameter->getType() && $parameter->getType()->getName() === 'array';
+	}
  	
  	private static $times = 0;
  	public static function atuschBreak($maxtimes) {
