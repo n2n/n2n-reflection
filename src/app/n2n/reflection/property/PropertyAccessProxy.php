@@ -161,7 +161,7 @@ class PropertyAccessProxy implements AccessProxy {
 		}
 	}
 
-	public function setValue($object, $value, $validate = true) {
+	public function setValue(object $object, $value, bool $validate = true) {
 		if (isset($this->constraint) && $validate) {
 			try {
 				$value = $this->constraint->validate($value);
@@ -190,8 +190,7 @@ class PropertyAccessProxy implements AccessProxy {
 		}				
 	}
 
-	public function getValue($object) {
-		ArgUtils::assertTrue(is_object($object), 'Non-object passed.');
+	public function getValue(object $object) {
 		$value = null;
 
 		if ($this->isPropertyAccessGetterMode()) {			
