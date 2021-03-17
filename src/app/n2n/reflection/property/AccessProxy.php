@@ -42,12 +42,12 @@ interface AccessProxy {
 	 * @param mixed $value
 	 * @param string $validate
 	 */
-	public function setValue($object, $value, $validate = true);
+	public function setValue(object $object, $value, bool $validate = true);
 	/**
 	 * @param object $object
 	 * @return mixed
 	 */
-	public function getValue($object);
+	public function getValue(object $object);
 	/**
 	 * @param bool $nullReturnAllowed
 	 */
