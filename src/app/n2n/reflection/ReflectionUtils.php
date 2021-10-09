@@ -96,7 +96,9 @@ class ReflectionUtils {
 	 * @throws TypeNotFoundException
 	 */
 	public static function createReflectionClass(string $typeName): \ReflectionClass {
-		TypeLoader::ensureTypeIsLoaded($typeName);
+		if (class_exists(TypeLoader::class)) {
+			TypeLoader::ensureTypeIsLoaded($typeName);
+		}
 		return new \ReflectionClass($typeName);
 	}
 	/**
