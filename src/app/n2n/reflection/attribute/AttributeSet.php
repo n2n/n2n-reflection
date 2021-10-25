@@ -8,6 +8,11 @@ use n2n\util\ex\UnsupportedOperationException;
 use n2n\util\type\ArgUtils;
 
 class AttributeSet {
+    private const TYPE_CLASS = 'cl';
+    private const TYPE_CONSTANT = 'co';
+    private const TYPE_PROPERTY = 'p';
+    private const TYPE_METHOD = 'm';
+
 	/**
 	 * The loaded Attributes are stored here
      * @var ClassAttribute[][][]|ClassConstantAttribute[][][]|PropertyAttribute[][][]|MethodAttribute[][][]
@@ -20,11 +25,6 @@ class AttributeSet {
 	private array $loaded = array();
 
 	private LegacyConverter $legacyConverter;
-
-	private const TYPE_CLASS = 'cl';
-	private const TYPE_CONSTANT = 'co';
-	private const TYPE_PROPERTY = 'p';
-	private const TYPE_METHOD = 'm';
 
 	/**
 	 * @param \ReflectionClass $class
@@ -335,29 +335,37 @@ class AttributeSet {
         $this->attributes[$type][$attributeName] = array_merge($this->attributes[$type][$attributeName], $loadedLegacyAttrs);
 	}
 
-	private function loadLegacyAttribute(string $type, string $attributeName, string $reflectorName) {
+	private function loadLegacyAttribute(string $type, string $attributeName, string $reflectorName): Attribute|null {
+        $foundAttribute = null;
         if ($type === self::TYPE_CLASS) {
-			return $this->legacyConverter->getClassAttribute($attributeName);
+			$foundAttribute = $this->legacyConverter->getClassAttribute($attributeName);
 		}
 
 		if ($type === self::TYPE_METHOD) {
-			return $this->legacyConverter->getMethodAttribute($reflectorName, $attributeName);
+			$foundAttribute = $this->legacyConverter->getMethodAttribute($reflectorName, $attributeName);
 		}
 
 		if ($type === self::TYPE_PROPERTY) {
-			return $this->legacyConverter->getPropertyAttribute($reflectorName, $attributeName);
+			$foundAttribute = $this->legacyConverter->getPropertyAttribute($reflectorName, $attributeName);
 		}
 
-        return [];
+        if ($foundAttribute !== null) {
+            $toMerge = $this->attributes[$type][$attributeName][$reflectorName] ?? [];
+            $this->attributes[$type][$attributeName][$reflectorName] = array_merge($toMerge, [$this->$foundAttribute]);
+        }
+
+        return $foundAttribute;
 	}
 
 	/**
 	 * @param string $type
 	 * @param string $attributeName
-	 * @param \Reflector $reflectors
+	 * @param \Reflector $reflector
 	 * @return ClassAttribute|ClassConstantAttribute|PropertyAttribute|MethodAttribute|null
 	 */
-	private function loadAttributeFromReflector(string $type, string $attributeName, \Reflector $reflector) {
+	private function loadAttributeFromReflector(string $type, string $attributeName, \Reflector $reflector)
+            : ClassAttribute|ClassConstantAttribute|PropertyAttribute|MethodAttribute|null {
+
 		$reflectorName = $reflector->getName();
 		if ($this->isLoaded($type, $attributeName, $reflectorName)) {
 			return $this->retrieveAttribute($type, $attributeName, $reflectorName);
@@ -377,7 +385,13 @@ class AttributeSet {
 		return $this->retrieveAttribute($type, $attributeName, $reflectorName);
 	}
 
-	private function isLoaded(string $type, $attributeName = null, $reflectorName = null) {
+    /**
+     * @param string $type
+     * @param string|null $attributeName
+     * @param string|null $reflectorName
+     * @return bool
+     */
+	private function isLoaded(string $type, string $attributeName = null, string $reflectorName = null) {
 		$isTypeLoaded = isset($this->loaded[$this->loadedKey($type)]);
 		$isAttributeLoaded = isset($this->loaded[$this->loadedKey($type, $attributeName)]);
 		$isAttributeOnReflectorLoaded = isset($this->loaded[$this->loadedKey($type, $attributeName, $reflectorName)]);
@@ -385,6 +399,11 @@ class AttributeSet {
 		return $isTypeLoaded || $isAttributeLoaded || $isAttributeOnReflectorLoaded;
 	}
 
+    /**
+     * @param string $type
+     * @param string|null $attributeName
+     * @param string|null $reflectorName
+     */
 	private function setLoaded(string $type, string $attributeName = null, string $reflectorName = null) {
 		if ($this->isLoaded($type, $reflectorName, $attributeName)) {
 			return;
@@ -393,6 +412,12 @@ class AttributeSet {
 		$this->loaded[] = true;
 	}
 
+    /**
+     * @param string $type
+     * @param \ReflectionAttribute $attribute
+     * @param \Reflector $reflector
+     * @return ClassAttribute|ClassConstantAttribute|MethodAttribute|PropertyAttribute
+     */
 	private function createAttribute(string $type, \ReflectionAttribute $attribute, \Reflector $reflector) {
 		if ($type === self::TYPE_CLASS) {
 			ArgUtils::assertTrue($reflector instanceof \ReflectionClass);
@@ -417,14 +442,21 @@ class AttributeSet {
         throw new UnsupportedOperationException($type . ' not supported by AttributeSet::loadLegacyAttribute()');
 	}
 
-	/**
-	 * @return string
-	 */
+    /**
+     * @param $type
+     * @param string|null $attributeName
+     * @param string|null $reflectorName
+     * @return string
+     */
 	private function loadedKey($type, string $attributeName = null, string $reflectorName = null): string {
 		return $type . '-' . $attributeName . '-' . $reflectorName;
 	}
 
-	private function unGroup(array $grouped) {
+    /**
+     * @param array $grouped
+     * @return array
+     */
+	private function unGroup(array $grouped): array {
 		$attributes = array();
 		foreach ($grouped as $groupedAttributes) {
 			foreach ($groupedAttributes as $attribute) {
