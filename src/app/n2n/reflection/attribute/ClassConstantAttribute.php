@@ -32,8 +32,7 @@ class ClassConstantAttribute implements Attribute {
 	}
 
 	public function getLine(): int {
-		// @todo
-		return -1;
+		return AttributeUtils::extractClassConstantAttributeLine($this->attribute, $this->constant);
 	}
 
 	public function getAttribute(): \ReflectionAttribute|null {

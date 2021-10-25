@@ -49,7 +49,7 @@ class AttributeSet {
 	 * @return boolean
 	 */
 	public function hasClassAttribute($attributeName) {
-		return 0 !== count($this->loadAttributes(self::TYPE_CLASS, $attributeName));
+		return null !== $this->getClassAttribute($attributeName);
 	}
 
 	/**
@@ -88,8 +88,7 @@ class AttributeSet {
 	 * @return boolean
 	 */
 	public function hasPropertyAttribute($propertyName, $attributeName) {
-		return null !== $this->loadAttributeFromReflector(self::TYPE_PROPERTY, $attributeName,
-				$this->class->getProperty($propertyName));
+		return null !== $this->getPropertyAttribute($propertyName, $attributeName);
 	}
 
 	/**
@@ -108,6 +107,51 @@ class AttributeSet {
 	public function containsPropertyAttributeName(string $name) {
 		return 0 !== count($this->loadAttributes(self::TYPE_PROPERTY, $name));
 	}
+
+    /**
+     * @return ClassConstantAttribute[]
+     */
+    public function getClassConstantAttributes() {
+        if (!$this->isLoaded(self::TYPE_CONSTANT)) {
+            $this->loadType(self::TYPE_CONSTANT);
+        }
+
+        return $this->unGroup($this->attributes[self::TYPE_CONSTANT]);
+    }
+
+    /**
+     * @param string $attributeName
+     * @return ClassConstantAttribute[]
+     */
+    public function getClassConstantAttributesByName($attributeName) {
+        return $this->loadAttributes(self::TYPE_CONSTANT, $attributeName);
+    }
+
+    /**
+     * @param string $constantName
+     * @param string $attributeName
+     * @return boolean
+     */
+    public function hasClassConstantAttribute($constantName, $attributeName) {
+        return null !== $this->getClassConstantAttribute($constantName, $attributeName);
+    }
+
+    /**
+     * @param string $constantName
+     * @param string $attributeName
+     * @return PropertyAttribute
+     */
+    public function getClassConstantAttribute($constantName, $attributeName) {
+        return $this->loadAttributeFromReflector(self::TYPE_CONSTANT, $attributeName,
+            $this->class->getReflectionConstant($constantName));
+    }
+    /**
+     * @param string $name
+     * @return boolean
+     */
+    public function containsClassConstantAttributeName(string $name) {
+        return 0 !== count($this->loadAttributes(self::TYPE_CONSTANT, $name));
+    }
 
 	/**
 	 * @return MethodAttribute[]
@@ -133,7 +177,7 @@ class AttributeSet {
 	 * @return boolean
 	 */
 	public function hasMethodAttribute($methodName, $attributeName) {
-		return null !== $this->loadAttributeFromReflector(self::TYPE_METHOD, $attributeName, $this->class->getMethod($methodName));
+		return null !== $this->getMethodAttribute($methodName, $attributeName);
 	}
 
 	/**
@@ -257,8 +301,9 @@ class AttributeSet {
 		}
 
 		if ($type === self::TYPE_CONSTANT) {
-			$reflectors = $this->class->getConstants();
+			$reflectors = $this->class->getREflectionConstants();
 		}
+
 		return $reflectors;
 	}
 
@@ -308,7 +353,7 @@ class AttributeSet {
 			return $this->legacyConverter->getPropertyAttribute($reflectorName, $attributeName);
 		}
 
-        throw new UnsupportedOperationException($type . ' not supported by AttributeSet::loadLegacyAttribute()');
+        return [];
 	}
 
 	/**
@@ -368,6 +413,11 @@ class AttributeSet {
 			ArgUtils::assertTrue($reflector instanceof \ReflectionMethod);
 			return new MethodAttribute($attribute, $reflector);
 		}
+
+        if ($type === self::TYPE_CONSTANT) {
+            ArgUtils::assertTrue($reflector instanceof \ReflectionClassConstant);
+            return new ClassConstantAttribute($attribute, $reflector);
+        }
 
         throw new UnsupportedOperationException($type . ' not supported by AttributeSet::loadLegacyAttribute()');
 	}

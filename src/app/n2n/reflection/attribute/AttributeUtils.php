@@ -5,6 +5,11 @@ namespace n2n\reflection\attribute;
 use ReflectionAttribute;
 
 class AttributeUtils {
+    public static function extractClassConstantAttributeLine(ReflectionAttribute $attribute, \ReflectionClassConstant $const): int {
+        $fileName = $const->getDeclaringClass()->getFileName();
+        $reflectorMatchPattern = '/(private|protected|public|) \s const \s ' . $const->getName() . '/x';
+        return self::findAttributeDeclaration($fileName, $attribute->getName(), $reflectorMatchPattern);
+    }
 
     public static function extractMethodAttributeLine(ReflectionAttribute $attribute, \ReflectionMethod $method): int {
         $fileName = $method->getDeclaringClass()->getFileName();
