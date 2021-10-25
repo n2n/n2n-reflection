@@ -103,11 +103,13 @@ class AttributeSetTest extends TestCase {
         $this->assertNull($privateMethod);
     }
 
-    public function testHasMethods() {
+    public function testHasClassAttribute() {
         $this->assertTrue($this->attributeSet->hasClassAttribute(AttrA::class));
         $this->assertTrue($this->attributeSet->hasClassAttribute(AttrB::class));
         $this->assertTrue($this->attributeSet->hasClassAttribute(AttrC::class));
+    }
 
+    public function testHasPropertyAttribute() {
         $this->assertTrue($this->attributeSet->hasPropertyAttribute('publicProperty', AttrA::class));
         $this->assertTrue($this->attributeSet->hasPropertyAttribute('protectedProperty', AttrB::class));
         $this->assertFalse($this->attributeSet->hasPropertyAttribute('privateProperty', AttrC::class));
@@ -117,14 +119,31 @@ class AttributeSetTest extends TestCase {
         $this->assertFalse($this->attributeSet->hasMethodAttribute('privateMethod', AttrC::class));
     }
 
-    public function testGetByNameMethods() {
+    public function testHasMethodAttribute() {
+        $this->assertTrue($this->attributeSet->hasMethodAttribute('publicMethod', AttrA::class));
+        $this->assertTrue($this->attributeSet->hasMethodAttribute('protectedMethod', AttrB::class));
+        $this->assertFalse($this->attributeSet->hasMethodAttribute('privateMethod', AttrC::class));
+    }
+
+    public function testGetPropertyAttributesByName() {
         $this->assertNotEmpty($this->attributeSet->getPropertyAttributesByName(AttrA::class));
         $this->assertNotEmpty($this->attributeSet->getPropertyAttributesByName(AttrB::class));
         $this->assertEmpty($this->attributeSet->getPropertyAttributesByName(AttrC::class));
+    }
 
+    public function testGetMethodAttributesByName() {
         $this->assertNotEmpty($this->attributeSet->getMethodAttributesByName(AttrA::class));
         $this->assertNotEmpty($this->attributeSet->getMethodAttributesByName(AttrB::class));
         $this->assertEmpty($this->attributeSet->getMethodAttributesByName(AttrC::class));
     }
 
+    public function testContainsPropertyAttributeName() {
+        $this->assertTrue($this->attributeSet->containsPropertyAttributeName(AttrA::class));
+        $this->assertFalse($this->attributeSet->containsPropertyAttributeName(AttrC::class));
+    }
+
+    public function testContainsMethodAttributeName() {
+        $this->assertTrue($this->attributeSet->containsMethodAttributeName(AttrA::class));
+        $this->assertFalse($this->attributeSet->containsMethodAttributeName(AttrC::class));
+    }
 }

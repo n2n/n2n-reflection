@@ -105,7 +105,7 @@ class AttributeSet {
 	 * @param string $name
 	 * @return boolean
 	 */
-	public function containsPropertyAttributeName($name) {
+	public function containsPropertyAttributeName(string $name) {
 		return 0 !== count($this->loadAttributes(self::TYPE_PROPERTY, $name));
 	}
 
@@ -148,11 +148,16 @@ class AttributeSet {
 	 * @param string $name
 	 * @return boolean
 	 */
-	public function containsMethodAttributeName($name) {
+	public function containsMethodAttributeName($name): bool {
 		return 0 !== count($this->loadAttributes(self::TYPE_METHOD, $name));
 	}
 
-	private function retrieveAttributes(string $type, string $attributeName = null) {
+    /**
+     * @param string $type
+     * @param string|null $attributeName
+     * @return array
+     */
+	private function retrieveAttributes(string $type, string $attributeName = null): array {
 		if (!isset($this->attributes[$type])) {
 			return array();
 		}
@@ -211,6 +216,9 @@ class AttributeSet {
 		return $this->attributes[$type][$attributeName];
 	}
 
+    /**
+     * @param string $type
+     */
 	private function loadType(string $type) {
 		$reflectors = $this->getReflectorsByType($type);
 
@@ -229,6 +237,10 @@ class AttributeSet {
 		$this->setLoaded($type);
 	}
 
+    /**
+     * @param string $type
+     * @return array|\ReflectionClass[]|\ReflectionMethod[]|\ReflectionProperty[]
+     */
 	private function getReflectorsByType(string $type) {
 		$reflectors = [];
 
