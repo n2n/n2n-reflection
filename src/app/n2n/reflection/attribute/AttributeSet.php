@@ -10,7 +10,6 @@ use n2n\util\type\ArgUtils;
 class AttributeSet {
 	/**
 	 * The loaded Attributes are stored here
-	 * @var Attribute[][][]
 	 */
 	private array $attributes = array();
 	/**
@@ -80,7 +79,7 @@ class AttributeSet {
 	 * @return PropertyAttribute[]
 	 */
 	public function getPropertyAttributesByName($attributeName) {
-		return $this->unGroup($this->loadAttributes(self::TYPE_PROPERTY, $attributeName));
+		return $this->loadAttributes(self::TYPE_PROPERTY, $attributeName);
 	}
 
 	/**
@@ -125,7 +124,7 @@ class AttributeSet {
 	 * @param string $name
 	 */
 	public function getMethodAttributesByName($name) {
-		return $this->unGroup($this->loadAttributes(self::TYPE_PROPERTY, $name));
+		return $this->loadAttributes(self::TYPE_METHOD, $name);
 	}
 
 	/**
@@ -173,7 +172,7 @@ class AttributeSet {
 	 * @param $type
 	 * @param $attributeName
 	 * @param $reflectorName
-	 * @return Attribute|null
+	 * @return ClassAttribute|ClassConstantAttribute|PropertyAttribute|MethodAttribute|null
 	 */
 	private function retrieveAttribute($type, $attributeName, $reflectorName) {
 		if (!isset($this->attributes[$type][$attributeName][$reflectorName])) {
@@ -186,10 +185,10 @@ class AttributeSet {
 	/**
 	 * @param string $type
 	 * @param string $attributeName
-	 * @return Attribute[]
+	 * @return ClassAttribute[]|ClassConstantAttribute[]|PropertyAttribute[]|MethodAttribute[]
 	 */
-	private function loadAttributes(string $type, string $attributeName): array {
-		if ($this->isLoaded($type, $attributeName)) {
+	private function loadAttributes(string $type, string $attributeName) {
+        if ($this->isLoaded($type, $attributeName)) {
 			return $this->retrieveAttributes($type, $attributeName);
 		}
 
@@ -200,9 +199,11 @@ class AttributeSet {
 		$reflectors = $this->getReflectorsByType($type);
 		foreach($reflectors as $reflector) {
 			foreach ($reflector->getAttributes($attributeName) as $attribute) {
-				$this->attributes[$type][$attributeName][$reflector->getName()] = $this->createAttribute($type, $attribute, $reflector);
+				$this->attributes[$type][$attributeName][$reflector->getName()]
+                        = $this->createAttribute($type, $attribute, $reflector);
 			}
 		}
+
 
 		$this->loadLegacyAttributes($type, $attributeName);
 		$this->setLoaded($type, $attributeName);
@@ -261,17 +262,24 @@ class AttributeSet {
 	}
 
 	private function loadLegacyAttributes(string $type, string $attributeName) {
-		if ($type === self::TYPE_CLASS) {
-			$this->attributes[$type][$attributeName] = array_merge($this->attributes[$type], $this->legacyConverter->getClassAttributesByName($attributeName));
+        $loadedLegacyAttrs = [];
+        if ($type === self::TYPE_CLASS) {
+			$loadedLegacyAttrs = $this->legacyConverter->getClassAttributesByName($attributeName);
 		} elseif ($type === self::TYPE_PROPERTY) {
-			$this->attributes[$type][$attributeName] = array_merge($this->attributes[$type], $this->legacyConverter->getPropertyAttributesByName($attributeName));
+            $loadedLegacyAttrs = $this->legacyConverter->getPropertyAttributesByName($attributeName);
 		} elseif ($type === self::TYPE_METHOD) {
-			$this->attributes[$type][$attributeName] = array_merge($this->attributes[$type], $this->legacyConverter->getMethodAttributesByName($attributeName));
+            $loadedLegacyAttrs = $this->legacyConverter->getMethodAttributesByName($attributeName);
 		}
+
+        if (!isset($this->attributes[$type][$attributeName])) {
+            $this->attributes[$type][$attributeName] = $loadedLegacyAttrs;
+            return;
+        }
+
+        $this->attributes[$type][$attributeName] = array_merge($this->attributes[$type][$attributeName], $loadedLegacyAttrs);
 	}
 
 	private function loadLegacyAttribute(string $type, string $attributeName, string $reflectorName) {
-
 		if ($this->isLoaded($type, $attributeName, $reflectorName)) {
 			return $this->retrieveAttributes($type, $attributeName, $reflectorName);
 		}
@@ -295,7 +303,7 @@ class AttributeSet {
 	 * @param string $type
 	 * @param string $attributeName
 	 * @param \Reflector $reflectors
-	 * @return Attribute
+	 * @return ClassAttribute|ClassConstantAttribute|PropertyAttribute|MethodAttribute
 	 */
 	private function loadAttributeFromReflector(string $type, string $attributeName, \Reflector $reflector) {
 		$reflectorName = $reflector->getName();

@@ -116,6 +116,9 @@ class LegacyConverter {
 	 * @return PropertyAttribute[]
 	 */
 	public function getPropertyAttributesByName(string $attributeName) {
+	    if (!isset($this->propertyAttributes[$attributeName])) {
+            return [];
+        }
 		return $this->propertyAttributes[$attributeName];
 	}
 
@@ -161,7 +164,10 @@ class LegacyConverter {
 	 * @return MethodAttribute[]
 	 */
 	public function getMethodAttributesByName(string $attributeName) {
-		return $this->methodAttributes[$attributeName];
+		if (!isset($this->methodAttributes[$attributeName])) {
+            return [];
+        }
+        return $this->methodAttributes[$attributeName];
 	}
 
 	/**

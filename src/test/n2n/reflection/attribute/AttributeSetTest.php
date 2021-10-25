@@ -3,6 +3,7 @@ namespace n2n\reflection\attribute;
 
 use n2n\reflection\attribute\mock\AttrA;
 use n2n\reflection\attribute\mock\AttrB;
+use n2n\reflection\attribute\mock\AttrC;
 use n2n\reflection\attribute\mock\MockClass;
 use PHPUnit\Framework\TestCase;
 
@@ -100,6 +101,30 @@ class AttributeSetTest extends TestCase {
 
         $privateMethod = $this->attributeSet->getMethodAttribute('privateMethod', AttrA::class);
         $this->assertNull($privateMethod);
+    }
+
+    public function testHasMethods() {
+        $this->assertTrue($this->attributeSet->hasClassAttribute(AttrA::class));
+        $this->assertTrue($this->attributeSet->hasClassAttribute(AttrB::class));
+        $this->assertTrue($this->attributeSet->hasClassAttribute(AttrC::class));
+
+        $this->assertTrue($this->attributeSet->hasPropertyAttribute('publicProperty', AttrA::class));
+        $this->assertTrue($this->attributeSet->hasPropertyAttribute('protectedProperty', AttrB::class));
+        $this->assertFalse($this->attributeSet->hasPropertyAttribute('privateProperty', AttrC::class));
+
+        $this->assertTrue($this->attributeSet->hasMethodAttribute('publicMethod', AttrA::class));
+        $this->assertTrue($this->attributeSet->hasMethodAttribute('protectedMethod', AttrB::class));
+        $this->assertFalse($this->attributeSet->hasMethodAttribute('privateMethod', AttrC::class));
+    }
+
+    public function testGetByNameMethods() {
+        $this->assertNotEmpty($this->attributeSet->getPropertyAttributesByName(AttrA::class));
+        $this->assertNotEmpty($this->attributeSet->getPropertyAttributesByName(AttrB::class));
+        $this->assertEmpty($this->attributeSet->getPropertyAttributesByName(AttrC::class));
+
+        $this->assertNotEmpty($this->attributeSet->getMethodAttributesByName(AttrA::class));
+        $this->assertNotEmpty($this->attributeSet->getMethodAttributesByName(AttrB::class));
+        $this->assertEmpty($this->attributeSet->getMethodAttributesByName(AttrC::class));
     }
 
 }
