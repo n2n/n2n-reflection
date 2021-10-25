@@ -32,7 +32,7 @@ class PropertyAttribute implements Attribute {
 	}
 
 	public function getLine(): int {
-		return AttributeUtils::extractAttributeLine($this->attribute, $this->property);
+		return AttributeUtils::extractPropertyAttributeLine($this->attribute, $this->property);
 	}
 
 	public function getAttribute(): \ReflectionAttribute|null {

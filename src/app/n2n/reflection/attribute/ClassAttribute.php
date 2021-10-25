@@ -35,8 +35,7 @@ class ClassAttribute implements Attribute {
 	}
 
 	public function getLine(): int {
-		// @todo find way to get line of declaration. Maybe read declaring class file and find the attribute above the class
-		return $this->class->getStartLine();
+		return AttributeUtils::extractClassAttributeLine($this->attribute, $this->class);
 	}
 
 	public function getAttribute(): \ReflectionAttribute|null {

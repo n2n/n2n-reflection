@@ -32,7 +32,7 @@ class MethodAttribute implements Attribute {
 	}
 
 	public function getLine(): int {
-		return AttributeUtils::extractAttributeLine($this->attribute, $this->method);
+		return AttributeUtils::extractMethodAttributeLine($this->attribute, $this->method);
 	}
 
 	public function getAttribute(): \ReflectionAttribute|null {

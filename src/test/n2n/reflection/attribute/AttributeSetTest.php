@@ -7,16 +7,14 @@ use n2n\reflection\attribute\mock\MockClass;
 use PHPUnit\Framework\TestCase;
 
 class AttributeSetTest extends TestCase {
-	private $mockClass;
+    private $attributeSet;
 
 	protected function setUp(): void {
-		$this->mockClass = new \ReflectionClass(MockClass::class);
+		$this->attributeSet = new AttributeSet(new \ReflectionClass(MockClass::class));
 	}
 
 	public function testReadClassAttributes() {
-		$attributeSet = new AttributeSet($this->mockClass);
-
-		$classAttributes = $attributeSet->getClassAttributes();
+		$classAttributes = $this->attributeSet->getClassAttributes();
 
 		foreach($classAttributes as $classAttribute) {
 			$this->assertInstanceOf(ClassAttribute::class, $classAttribute);
@@ -27,19 +25,17 @@ class AttributeSetTest extends TestCase {
 	}
 
     public function testReadClassAttribute() {
-        $attributeSet = new AttributeSet($this->mockClass);
-        $classAttribute = $attributeSet->getClassAttribute(AttrB::class);
+        $classAttribute = $this->attributeSet->getClassAttribute(AttrB::class);
 
         $this->assertInstanceOf(ClassAttribute::class, $classAttribute);
         $this->assertInstanceOf(\ReflectionAttribute::class, $classAttribute->getAttribute());
-        $this->assertIsNumeric($classAttribute->getLine());
+        $this->assertEquals(AttrB::class, $classAttribute->getAttribute()->getName());
         $this->assertIsString($classAttribute->getFile());
+        $this->assertEquals(4, $classAttribute->getLine());
     }
 
 	public function testReadPropertyAttributes() {
-		$attributeSet = new AttributeSet($this->mockClass);
-
-		$propertyAttributes = $attributeSet->getPropertyAttributes();
+		$propertyAttributes = $this->attributeSet->getPropertyAttributes();
 
 		foreach($propertyAttributes as $propertyAttribute) {
 			$this->assertInstanceOf(PropertyAttribute::class, $propertyAttribute);
@@ -48,20 +44,33 @@ class AttributeSetTest extends TestCase {
 			$this->assertIsString($propertyAttribute->getFile());
 		}
 
-		$this->assertNotNull($attributeSet->getPropertyAttribute('publicProperty', AttrA::class));
-		$this->assertNotNull($attributeSet->getPropertyAttribute('protectedProperty', AttrB::class));
-		$this->assertNull($attributeSet->getPropertyAttribute('privateProperty', AttrA::class));
+		$this->assertNotNull($this->attributeSet->getPropertyAttribute('publicProperty', AttrA::class));
+		$this->assertNotNull($this->attributeSet->getPropertyAttribute('protectedProperty', AttrB::class));
+		$this->assertNull($this->attributeSet->getPropertyAttribute('privateProperty', AttrA::class));
 
-		$this->assertTrue($attributeSet->hasPropertyAttribute('publicProperty', AttrA::class));
-		$this->assertTrue($attributeSet->hasPropertyAttribute('protectedProperty', AttrB::class));
-		$this->assertFalse($attributeSet->hasPropertyAttribute('privateProperty', AttrB::class));
+		$this->assertTrue($this->attributeSet->hasPropertyAttribute('publicProperty', AttrA::class));
+		$this->assertTrue($this->attributeSet->hasPropertyAttribute('protectedProperty', AttrB::class));
+		$this->assertFalse($this->attributeSet->hasPropertyAttribute('privateProperty', AttrB::class));
 	}
 
+    public function testReadPropertyAttribute() {
+        $attribute = $this->attributeSet->getPropertyAttribute('publicProperty', AttrA::class);
+
+        $this->assertInstanceOf(PropertyAttribute::class, $attribute);
+        $this->assertInstanceOf(\ReflectionAttribute::class, $attribute->getAttribute());
+        $this->assertEquals(AttrA::class, $attribute->getAttribute()->getName());
+        $this->assertIsString($attribute->getFile());
+
+        $this->assertEquals(7, $attribute->getLine());
+        $protectedProperty = $this->attributeSet->getPropertyAttribute('protectedProperty', AttrB::class);
+        $this->assertEquals(9, $protectedProperty->getLine());
+
+        $privateProperty = $this->attributeSet->getPropertyAttribute('privateProperty', AttrA::class);
+        $this->assertNull($privateProperty);
+    }
+
 	public function testReadMethodAttributes() {
-		$attributeSet = new AttributeSet($this->mockClass);
-
-		$methodAttributes = $attributeSet->getMethodAttributes();
-
+		$methodAttributes = $this->attributeSet->getMethodAttributes();
 		foreach($methodAttributes as $methodAttribute) {
 			$this->assertInstanceOf(MethodAttribute::class, $methodAttribute);
 			$this->assertInstanceOf(\ReflectionAttribute::class, $methodAttribute->getAttribute());
@@ -69,13 +78,28 @@ class AttributeSetTest extends TestCase {
 			$this->assertIsString($methodAttribute->getFile());
 		}
 
-		$this->assertNotNull($attributeSet->getMethodAttribute('publicMethod', AttrA::class));
-		$this->assertNotNull($attributeSet->getMethodAttribute('protectedMethod', AttrB::class));
-		$this->assertNull($attributeSet->getMethodAttribute('privateMethod', AttrA::class));
+		$this->assertNotNull($this->attributeSet->getMethodAttribute('publicMethod', AttrA::class));
+		$this->assertNotNull($this->attributeSet->getMethodAttribute('protectedMethod', AttrB::class));
+		$this->assertNull($this->attributeSet->getMethodAttribute('privateMethod', AttrA::class));
 
-		$this->assertTrue($attributeSet->hasMethodAttribute('publicMethod', AttrA::class));
-		$this->assertTrue($attributeSet->hasMethodAttribute('protectedMethod', AttrB::class));
-		$this->assertFalse($attributeSet->hasMethodAttribute('privateMethod', AttrB::class));
+		$this->assertTrue($this->attributeSet->hasMethodAttribute('publicMethod', AttrA::class));
+		$this->assertTrue($this->attributeSet->hasMethodAttribute('protectedMethod', AttrB::class));
+		$this->assertFalse($this->attributeSet->hasMethodAttribute('privateMethod', AttrB::class));
 	}
+
+    public function testReadMethodAttribute() {
+        $attribute = $this->attributeSet->getMethodAttribute('publicMethod', AttrA::class);
+        $this->assertInstanceOf(MethodAttribute::class, $attribute);
+        $this->assertInstanceOf(\ReflectionAttribute::class, $attribute->getAttribute());
+        $this->assertEquals(AttrA::class, $attribute->getAttribute()->getName());
+        $this->assertIsString($attribute->getFile());
+
+        $this->assertEquals(13, $attribute->getLine());
+        $protectedMethod = $this->attributeSet->getMethodAttribute('protectedMethod', AttrB::class);
+        $this->assertEquals(18, $protectedMethod->getLine());
+
+        $privateMethod = $this->attributeSet->getMethodAttribute('privateMethod', AttrA::class);
+        $this->assertNull($privateMethod);
+    }
 
 }

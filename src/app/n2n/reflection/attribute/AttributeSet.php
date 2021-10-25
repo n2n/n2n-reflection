@@ -6,7 +6,6 @@ use n2n\reflection\attribute\legacy\LegacyConverter;
 use n2n\reflection\ReflectionContext;
 use n2n\util\ex\UnsupportedOperationException;
 use n2n\util\type\ArgUtils;
-use phpbob\representation\PhpFunction;
 
 class AttributeSet {
 	/**
@@ -97,6 +96,7 @@ class AttributeSet {
 	/**
 	 * @param string $propertyName
 	 * @param string $attributeName
+     * @return PropertyAttribute
 	 */
 	public function getPropertyAttribute($propertyName, $attributeName) {
 		return $this->loadAttributeFromReflector(self::TYPE_PROPERTY, $attributeName,
@@ -288,9 +288,7 @@ class AttributeSet {
 			return $this->legacyConverter->getPropertyAttribute($reflectorName, $attributeName);
 		}
 
-		if ($type === self::TYPE_CONSTANT) {
-			throw new UnsupportedOperationException('Constants are not supported');
-		}
+        throw new UnsupportedOperationException($type . ' not supported by AttributeSet::loadLegacyAttribute()');
 	}
 
 	/**
@@ -350,6 +348,8 @@ class AttributeSet {
 			ArgUtils::assertTrue($reflector instanceof \ReflectionMethod);
 			return new MethodAttribute($attribute, $reflector);
 		}
+
+        throw new UnsupportedOperationException($type . ' not supported by AttributeSet::loadLegacyAttribute()');
 	}
 
 	/**
