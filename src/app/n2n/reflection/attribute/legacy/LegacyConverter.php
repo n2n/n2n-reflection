@@ -85,11 +85,11 @@ class LegacyConverter {
 	 * @return ClassAttribute|null
 	 */
 	public function getClassAttribute(string $attributeName) {
-		if ($attr = current($this->classAttributes[$attributeName])) {
-			return $attr;
-		}
+        if (!isset($this->classAttributes[$attributeName])) {
+            return null;
+        }
 
-		return null;
+		return $this->classAttributes[$attributeName];
 	}
 
 	/**

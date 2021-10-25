@@ -26,6 +26,16 @@ class AttributeSetTest extends TestCase {
 		}
 	}
 
+    public function testReadClassAttribute() {
+        $attributeSet = new AttributeSet($this->mockClass);
+        $classAttribute = $attributeSet->getClassAttribute(AttrB::class);
+
+        $this->assertInstanceOf(ClassAttribute::class, $classAttribute);
+        $this->assertInstanceOf(\ReflectionAttribute::class, $classAttribute->getAttribute());
+        $this->assertIsNumeric($classAttribute->getLine());
+        $this->assertIsString($classAttribute->getFile());
+    }
+
 	public function testReadPropertyAttributes() {
 		$attributeSet = new AttributeSet($this->mockClass);
 
@@ -67,4 +77,5 @@ class AttributeSetTest extends TestCase {
 		$this->assertTrue($attributeSet->hasMethodAttribute('protectedMethod', AttrB::class));
 		$this->assertFalse($attributeSet->hasMethodAttribute('privateMethod', AttrB::class));
 	}
+
 }
