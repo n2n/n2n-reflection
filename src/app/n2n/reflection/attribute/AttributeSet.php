@@ -318,21 +318,21 @@ class AttributeSet {
 	}
 
 	private function loadLegacyAttributes(string $type, string $attributeName) {
-        $loadedLegacyAttrs = [];
-        if ($type === self::TYPE_CLASS) {
+		$loadedLegacyAttrs = [];
+		if ($type === self::TYPE_CLASS) {
 			$loadedLegacyAttrs = $this->legacyConverter->getClassAttributesByName($attributeName);
 		} elseif ($type === self::TYPE_PROPERTY) {
-            $loadedLegacyAttrs = $this->legacyConverter->getPropertyAttributesByName($attributeName);
+			$loadedLegacyAttrs = $this->legacyConverter->getPropertyAttributesByName($attributeName);
 		} elseif ($type === self::TYPE_METHOD) {
-            $loadedLegacyAttrs = $this->legacyConverter->getMethodAttributesByName($attributeName);
+			$loadedLegacyAttrs = $this->legacyConverter->getMethodAttributesByName($attributeName);
 		}
 
-        if (!isset($this->attributes[$type][$attributeName])) {
-            $this->attributes[$type][$attributeName] = $loadedLegacyAttrs;
-            return;
-        }
+		if (!isset($this->attributes[$type][$attributeName])) {
+			$this->attributes[$type][$attributeName] = $loadedLegacyAttrs;
+			return;
+		}
 
-        $this->attributes[$type][$attributeName] = array_merge($this->attributes[$type][$attributeName], $loadedLegacyAttrs);
+		$this->attributes[$type][$attributeName] = array_merge($this->attributes[$type][$attributeName], $loadedLegacyAttrs);
 	}
 
 	private function loadLegacyAttribute(string $type, string $attributeName, string $reflectorName): Attribute|null {
@@ -463,6 +463,7 @@ class AttributeSet {
 				$attributes[] = $attribute;
 			}
 		}
+
 		return $attributes;
 	}
 }

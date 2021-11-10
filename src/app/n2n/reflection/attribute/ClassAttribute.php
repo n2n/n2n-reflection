@@ -21,7 +21,7 @@ class ClassAttribute implements Attribute {
 	 */
 	private $instance;
 
-	public function __construct(\ReflectionAttribute $reflectionAttribute = null, \ReflectionClass $class) {
+	public function __construct(\ReflectionAttribute|null $reflectionAttribute, \ReflectionClass $class) {
 		$this->attribute = $reflectionAttribute;
 		$this->class = $class;
 

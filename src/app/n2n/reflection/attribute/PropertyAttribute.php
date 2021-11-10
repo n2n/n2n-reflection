@@ -7,7 +7,7 @@ namespace n2n\reflection\attribute;
  */
 class PropertyAttribute implements Attribute {
 	/**
-	 * @var \ReflectionAttribute
+	 * @var \ReflectionAttribute|null
 	 */
 	private $attribute;
 
@@ -21,10 +21,12 @@ class PropertyAttribute implements Attribute {
 	 */
 	private $instance;
 
-	public function __construct(\ReflectionAttribute $reflectionAttribute, \ReflectionProperty $property) {
+	public function __construct(\ReflectionAttribute|null $reflectionAttribute, \ReflectionProperty $property) {
 		$this->attribute = $reflectionAttribute;
 		$this->property = $property;
-		$this->instance = $reflectionAttribute->newInstance();
+		if ($reflectionAttribute !== null) {
+			$this->instance = $reflectionAttribute->newInstance();
+		}
 	}
 
 	public function getFile(): string {
@@ -32,7 +34,10 @@ class PropertyAttribute implements Attribute {
 	}
 
 	public function getLine(): int {
-		return AttributeUtils::extractPropertyAttributeLine($this->attribute, $this->property);
+		if ($this->attribute !== null) {
+			return AttributeUtils::extractPropertyAttributeLine($this->attribute, $this->property);
+		}
+		return -1;
 	}
 
 	public function getAttribute(): \ReflectionAttribute|null {

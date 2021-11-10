@@ -116,9 +116,10 @@ class LegacyConverter {
 	 * @return PropertyAttribute[]
 	 */
 	public function getPropertyAttributesByName(string $attributeName) {
-	    if (!isset($this->propertyAttributes[$attributeName])) {
-            return [];
-        }
+		if (!isset($this->propertyAttributes[$attributeName])) {
+			return [];
+		}
+
 		return $this->propertyAttributes[$attributeName];
 	}
 
@@ -201,16 +202,15 @@ class LegacyConverter {
 		$reflectionAttribute = null;
 		if ($annotation instanceof ClassAnnotation) {
 			$reflector = new \ReflectionClass($annotation::class);
-			$reflectionAttribute = current($reflector->getAttributes($annotation->getAttributeName()));
-			$reflectionAttribute = new ClassAttribute($reflectionAttribute, $annotation->getAnnotatedClass());
+			$reflectionAttribute = new ClassAttribute(null, $annotation->getAnnotatedClass());
 		} else if ($annotation instanceof PropertyAnnotation) {
 			$reflector = new \ReflectionClass($annotation);
 			$reflectionAttribute = current($reflector->getAttributes($annotation->getAttributeName()));
-			$reflectionAttribute = new PropertyAttribute($reflectionAttribute, $annotation->getAnnotatedProperty());
+			$reflectionAttribute = new PropertyAttribute(null, $annotation->getAnnotatedProperty());
 		} else if ($annotation instanceof MethodAnnotation) {
 			$reflector = new \ReflectionClass($annotation);
 			$reflectionAttribute = current($reflector->getAttributes($annotation->getAttributeName()));
-			$reflectionAttribute = new MethodAttribute($reflectionAttribute, $annotation->getAnnotatedMethod());
+			$reflectionAttribute = new MethodAttribute(null, $annotation->getAnnotatedMethod());
 		}
 		return $reflectionAttribute;
 	}

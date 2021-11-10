@@ -21,7 +21,7 @@ class MethodAttribute implements Attribute {
 	 */
 	private $instance;
 
-	public function __construct(\ReflectionAttribute $reflectionAttribute, \ReflectionMethod $method) {
+	public function __construct(\ReflectionAttribute|null $reflectionAttribute, \ReflectionMethod $method) {
 		$this->attribute = $reflectionAttribute;
 		$this->method = $method;
 		$this->instance = $reflectionAttribute->newInstance();
