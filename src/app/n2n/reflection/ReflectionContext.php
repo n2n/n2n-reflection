@@ -22,10 +22,22 @@
 namespace n2n\reflection;
 
 use n2n\reflection\annotation\AnnotationSetFactory;
+use n2n\reflection\attribute\AttributeSet;
 
 class ReflectionContext {
+	private static $attributeSets = array();
+
 	private static $annotationSets = array();
 	private static $annotationAccessProxies = array();
+
+	public static function getAttributeSet(\ReflectionClass $class) {
+		$className = $class->getName();
+		if (!isset(self::$attributeSets[$className])) {
+			self::$attributeSets[$className] = new AttributeSet($class);
+		}
+		return self::$attributeSets[$className];
+	}
+
 	/**
 	 * @param \ReflectionClass $class
 	 * @return \n2n\reflection\annotation\AnnotationSet
