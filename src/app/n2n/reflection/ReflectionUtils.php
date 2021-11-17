@@ -22,7 +22,7 @@
 namespace n2n\reflection;
 
 use n2n\core\TypeLoader;
-use n2n\io\ob\OutputBuffer;
+use n2n\util\io\ob\OutputBuffer;
 use n2n\reflection\annotation\Annotation;
 use n2n\core\TypeNotFoundException;
 
