@@ -61,7 +61,7 @@ class ReflectionUtils {
 	 */
 	public static function extractParameterClass(\ReflectionParameter $parameter) {
 		$type = $parameter->getType();
-		if ($type === null || $type->isBuiltin()) {
+		if (!($type instanceof \ReflectionNamedType) || $type->isBuiltin()) {
 			return null;
 		}
 		
@@ -170,7 +170,8 @@ class ReflectionUtils {
 	 * @return boolean
 	 */
 	static function isArrayParameter(\ReflectionParameter $parameter) {
-		return null !== $parameter->getType() && $parameter->getType()->getName() === 'array';
+		return $parameter->getType() instanceOf \ReflectionNamedType
+				&& $parameter->getType()->getName() === 'array';
 	}
  	
  	private static $times = 0;
