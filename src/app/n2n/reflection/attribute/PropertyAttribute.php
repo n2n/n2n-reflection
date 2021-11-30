@@ -5,28 +5,21 @@ namespace n2n\reflection\attribute;
 /**
  * Describer for { @link \Attribute Attribute } on property.
  */
-class PropertyAttribute implements Attribute {
-	/**
-	 * @var \ReflectionAttribute|null
-	 */
-	private $attribute;
+class PropertyAttribute extends AttributeAdapter {
+	private \ReflectionProperty $property;
 
-	/**
-	 * @var \ReflectionProperty
-	 */
-	private $property;
-
-	/**
-	 * @var mixed|null
-	 */
-	private $instance;
-
-	public function __construct(\ReflectionAttribute|null $reflectionAttribute, \ReflectionProperty $property) {
+	public function __construct(\ReflectionAttribute|null $reflectionAttribute, \ReflectionProperty $property, mixed $instance) {
 		$this->attribute = $reflectionAttribute;
 		$this->property = $property;
-		if ($reflectionAttribute !== null) {
-			$this->instance = $reflectionAttribute->newInstance();
-		}
+		$this->instance = $instance;
+	}
+
+	public static function fromAttribute(\ReflectionAttribute $attribute, \ReflectionProperty $property) {
+		return new PropertyAttribute($attribute, $property, null);
+	}
+
+	public static function fromInstance(mixed $instance, \ReflectionProperty $property) {
+		return new PropertyAttribute(null, $property, $instance);
 	}
 
 	public function getFile(): string {
@@ -38,14 +31,6 @@ class PropertyAttribute implements Attribute {
 			return AttributeUtils::extractPropertyAttributeLine($this->attribute, $this->property);
 		}
 		return -1;
-	}
-
-	public function getAttribute(): \ReflectionAttribute|null {
-		return $this->attribute;
-	}
-
-	public function getInstance(): mixed {
-		return $this->instance;
 	}
 
 	public function getProperty(): \ReflectionProperty {
