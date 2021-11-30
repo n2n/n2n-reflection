@@ -1,8 +1,15 @@
 <?php
 namespace n2n\reflection\attribute\mock;
 
+use n2n\reflection\annotation\AnnoInit;
+use n2n\reflection\attribute\legacy\mock\LegacyPreSuffixMock;
+
 #[AttrA, AttrB, AttrC]
 class MockClass {
+
+	private static function _annos(AnnoInit $ai) {
+		$ai->p('key', new LegacyPreSuffixMock('key[', ']'));
+	}
 
     #[AttrA, AttrB, AttrC]
     const TEST = 'test';
@@ -17,6 +24,8 @@ class MockClass {
 	#[AttrB]
 	protected $protectedProperty;
 	private $privateProperty;
+
+	private $key;
 
 	#[AttrA]
 	public function publicMethod() {

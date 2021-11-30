@@ -18,7 +18,7 @@ class LegacyConverter {
 	/**
 	 * @var AnnotationSet|null
 	 */
-	private $annotationSet;
+	private ?AnnotationSet $annotationSet;
 
 	private $classAttributes = array();
 	private $propertyAttributes = array();
@@ -202,15 +202,15 @@ class LegacyConverter {
 		$reflectionAttribute = null;
 		if ($annotation instanceof ClassAnnotation) {
 			$reflector = new \ReflectionClass($annotation::class);
-			$reflectionAttribute = new ClassAttribute(null, $annotation->getAnnotatedClass());
+			$reflectionAttribute = ClassAttribute::fromInstance($annotation->toAttributeInstance(), $annotation->getAnnotatedClass());
 		} else if ($annotation instanceof PropertyAnnotation) {
 			$reflector = new \ReflectionClass($annotation);
 			$reflectionAttribute = current($reflector->getAttributes($annotation->getAttributeName()));
-			$reflectionAttribute = new PropertyAttribute(null, $annotation->getAnnotatedProperty());
+			$reflectionAttribute = PropertyAttribute::fromInstance($annotation->toAttributeInstance(), $annotation->getAnnotatedProperty());
 		} else if ($annotation instanceof MethodAnnotation) {
 			$reflector = new \ReflectionClass($annotation);
 			$reflectionAttribute = current($reflector->getAttributes($annotation->getAttributeName()));
-			$reflectionAttribute = new MethodAttribute(null, $annotation->getAnnotatedMethod());
+			$reflectionAttribute = MethodAttribute::fromInstance($annotation->toAttributeInstance(), $annotation->getAnnotatedMethod());
 		}
 		return $reflectionAttribute;
 	}
