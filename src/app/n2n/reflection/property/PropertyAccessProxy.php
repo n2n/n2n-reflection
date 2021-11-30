@@ -26,6 +26,7 @@ use n2n\util\type\ArgUtils;
 use n2n\util\type\TypeUtils;
 use n2n\util\type\TypeConstraint;
 use n2n\util\type\ValueIncompatibleWithConstraintsException;
+use n2n\util\type\TypeConstraints;
 
 class PropertyAccessProxy implements AccessProxy {
 	private $propertyName;
@@ -48,7 +49,7 @@ class PropertyAccessProxy implements AccessProxy {
 			$this->constraint = $this->baseConstraint = TypeConstraint::createSimple(null);
 		} else {
 			$parameter = current($setterMethod->getParameters());
-			$this->constraint = $this->baseConstraint = TypeConstraint::createFromParameter($parameter);
+			$this->constraint = $this->baseConstraint = TypeConstraints::type($parameter);
 		}
 	}
 	
