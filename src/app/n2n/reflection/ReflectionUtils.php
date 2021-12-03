@@ -64,14 +64,25 @@ class ReflectionUtils {
 		if (!($type instanceof \ReflectionNamedType) || $type->isBuiltin()) {
 			return null;
 		}
-		
-		try {
-			return ReflectionUtils::createReflectionClass($type->getName());
-		} catch (TypeNotFoundException $e) {
-			$declaringFunction = $parameter->getDeclaringFunction();
-			throw new ReflectionErrorException('Unkown type defined for parameter: ' . $parameter->getName(),
-					$declaringFunction->getFileName(), $declaringFunction->getStartLine());
+
+		$thrownE = null;
+		if (class_exists(TypeLoader::class, false)) {
+			try {
+				return ReflectionUtils::createReflectionClass($type->getName());
+			} catch (TypeNotFoundException $e) {
+				$thrownE = $e;
+			}
+		} else {
+			try {
+				return new \ReflectionClass($type->getName());
+			} catch (\ReflectionException $e) {
+				$thrownE = $e;
+			}
 		}
+
+		$declaringFunction = $parameter->getDeclaringFunction();
+		throw new ReflectionErrorException('Unkown type defined for parameter: ' . $parameter->getName(),
+				$declaringFunction->getFileName(), $declaringFunction->getStartLine(), null, null, $e);
 	}
 	
 	public static function extractMethodHierarchy(\ReflectionClass $class, $methodName) {
@@ -94,6 +105,7 @@ class ReflectionUtils {
 	 * @param string $typeName
 	 * @return \ReflectionClass
 	 * @throws TypeNotFoundException
+	 * @deprecated works only if {@link n2n\core} module is present
 	 */
 	public static function createReflectionClass(string $typeName): \ReflectionClass {
 		TypeLoader::ensureTypeIsLoaded($typeName);
