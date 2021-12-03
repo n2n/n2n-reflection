@@ -5,26 +5,25 @@ namespace n2n\reflection\attribute;
 /**
  * Describer for { @link \Attribute Attribute } on method.
  */
-class MethodAttribute implements Attribute {
-	/**
-	 * @var \ReflectionAttribute
-	 */
-	private $attribute;
+class MethodAttribute extends AttributeAdapter {
+	private \ReflectionMethod $method;
 
-	/**
-	 * @var \ReflectionMethod
-	 */
-	private $method;
-
-	/**
-	 * @var mixed|null
-	 */
-	private $instance;
-
-	public function __construct(\ReflectionAttribute|null $reflectionAttribute, \ReflectionMethod $method) {
+	private function __construct(\ReflectionAttribute|null $reflectionAttribute, \ReflectionMethod $method, mixed $instance) {
 		$this->attribute = $reflectionAttribute;
 		$this->method = $method;
-		$this->instance = $reflectionAttribute->newInstance();
+		$this->instance = $instance;
+	}
+
+	public static function fromAttribute(\ReflectionAttribute $attribute, \ReflectionMethod $method) {
+		return new MethodAttribute($attribute, $method, null);
+	}
+
+	public static function fromInstance(mixed $instance, \ReflectionMethod $method) {
+		return new MethodAttribute(null, $method, $instance);
+	}
+
+	public function getMethod(): \ReflectionMethod {
+		return $this->method;
 	}
 
 	public function getFile(): string {
@@ -33,13 +32,5 @@ class MethodAttribute implements Attribute {
 
 	public function getLine(): int {
 		return AttributeUtils::extractMethodAttributeLine($this->attribute, $this->method);
-	}
-
-	public function getAttribute(): \ReflectionAttribute|null {
-		return $this->attribute;
-	}
-
-	public function getInstance(): mixed {
-		return $this->instance;
 	}
 }

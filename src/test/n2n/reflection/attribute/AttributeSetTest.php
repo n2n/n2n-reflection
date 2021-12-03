@@ -5,7 +5,7 @@ use n2n\reflection\attribute\mock\AttrA;
 use n2n\reflection\attribute\mock\AttrB;
 use n2n\reflection\attribute\mock\AttrC;
 use n2n\reflection\attribute\mock\MockClass;
-use PhpParser\Builder\ClassConst;
+use n2n\reflection\attribute\mock\PreSuffix;
 use PHPUnit\Framework\TestCase;
 
 class AttributeSetTest extends TestCase {
@@ -33,7 +33,7 @@ class AttributeSetTest extends TestCase {
         $this->assertInstanceOf(\ReflectionAttribute::class, $classAttribute->getAttribute());
         $this->assertEquals(AttrB::class, $classAttribute->getAttribute()->getName());
         $this->assertIsString($classAttribute->getFile());
-        $this->assertEquals(4, $classAttribute->getLine());
+        $this->assertEquals(7, $classAttribute->getLine());
     }
 
     public function testReadClassConstantAttributes() {
@@ -53,7 +53,7 @@ class AttributeSetTest extends TestCase {
         $this->assertInstanceOf(ClassConstantAttribute::class, $attribute);
         $this->assertInstanceOf(\ReflectionAttribute::class, $attribute->getAttribute());
         $this->assertEquals(AttrA::class, $attribute->getAttribute()->getName());
-        $this->assertEquals(7, $attribute->getLine());
+        $this->assertEquals(14, $attribute->getLine());
         $this->assertIsString($attribute->getFile());
 
         $this->assertInstanceOf(ClassConstantAttribute::class, $this->attributeSet->getClassConstantAttribute('TEST', AttrB::class));
@@ -61,12 +61,12 @@ class AttributeSetTest extends TestCase {
 
         $attribute = $this->attributeSet->getClassConstantAttribute('PUBLIC_CONST', AttrA::class);
         $this->assertNotNull($attribute);
-        $this->assertEquals(9, $attribute->getLine());
+        $this->assertEquals(16, $attribute->getLine());
         $this->assertNull($this->attributeSet->getClassConstantAttribute('PUBLIC_CONST', AttrB::class));
 
         $attribute = $this->attributeSet->getClassConstantAttribute('PROTECTED_CONST', AttrB::class);
         $this->assertNotNull($attribute);
-        $this->assertEquals(11, $attribute->getLine());
+        $this->assertEquals(18, $attribute->getLine());
         $this->assertNull($this->attributeSet->getClassConstantAttribute('PROTECTED_CONST', AttrC::class));
 
         $this->assertNull($this->attributeSet->getClassConstantAttribute('PRIVATE_CONST', AttrA::class));
@@ -79,7 +79,6 @@ class AttributeSetTest extends TestCase {
 
 		foreach($propertyAttributes as $propertyAttribute) {
 			$this->assertInstanceOf(PropertyAttribute::class, $propertyAttribute);
-			$this->assertInstanceOf(\ReflectionAttribute::class, $propertyAttribute->getAttribute());
 			$this->assertIsNumeric($propertyAttribute->getLine());
 			$this->assertIsString($propertyAttribute->getFile());
 		}
@@ -93,9 +92,9 @@ class AttributeSetTest extends TestCase {
         $this->assertEquals(AttrA::class, $attribute->getAttribute()->getName());
         $this->assertIsString($attribute->getFile());
 
-        $this->assertEquals(15, $attribute->getLine());
+        $this->assertEquals(22, $attribute->getLine());
         $protectedPropertyAttr = $this->attributeSet->getPropertyAttribute('protectedProperty', AttrB::class);
-        $this->assertEquals(17, $protectedPropertyAttr->getLine());
+        $this->assertEquals(24, $protectedPropertyAttr->getLine());
 
         $privateProperty = $this->attributeSet->getPropertyAttribute('privateProperty', AttrA::class);
         $this->assertNull($privateProperty);
@@ -126,9 +125,9 @@ class AttributeSetTest extends TestCase {
         $this->assertEquals(AttrA::class, $attribute->getAttribute()->getName());
         $this->assertIsString($attribute->getFile());
 
-        $this->assertEquals(21, $attribute->getLine());
+        $this->assertEquals(30, $attribute->getLine());
         $protectedMethod = $this->attributeSet->getMethodAttribute('protectedMethod', AttrB::class);
-        $this->assertEquals(26, $protectedMethod->getLine());
+        $this->assertEquals(35, $protectedMethod->getLine());
 
         $privateMethod = $this->attributeSet->getMethodAttribute('privateMethod', AttrA::class);
         $this->assertNull($privateMethod);
@@ -200,4 +199,11 @@ class AttributeSetTest extends TestCase {
         $this->assertTrue($this->attributeSet->containsMethodAttributeName(AttrA::class));
         $this->assertFalse($this->attributeSet->containsMethodAttributeName(AttrC::class));
     }
+
+	public function testPreSuffixPropertiesCorrectly() {
+		$attr = $this->attributeSet->getPropertyAttribute('key', PreSuffix::class);
+		$instance = $attr->getInstance();
+		$this->assertEquals($instance->getPrefix(), 'key[');
+		$this->assertEquals($instance->getSuffix(), ']');
+	}
 }
