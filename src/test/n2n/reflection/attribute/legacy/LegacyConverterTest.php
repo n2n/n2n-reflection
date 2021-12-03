@@ -23,14 +23,15 @@ class LegacyConverterTest extends TestCase {
 		$attributeSet = new LegacyConverter(AnnotationSetFactory::create($this->mockClass));
 
 		$classAttributes = $attributeSet->getClassAttributes();
-
-		foreach($classAttributes as $classAttribute) {
-			$this->assertInstanceOf(ClassAttribute::class, $classAttribute);
-			if ($classAttribute->getAttribute() !== null) {
-				$this->assertInstanceOf(\ReflectionAttribute::class, $classAttribute->getAttribute());
+		foreach ($classAttributes as $classAttributeArr) {
+			foreach($classAttributeArr as $classAttribute) {
+				$this->assertInstanceOf(ClassAttribute::class, $classAttribute);
+				if ($classAttribute->getAttribute() !== null) {
+					$this->assertInstanceOf(\ReflectionAttribute::class, $classAttribute->getAttribute());
+				}
+				$this->assertIsNumeric($classAttribute->getLine());
+				$this->assertIsString($classAttribute->getFile());
 			}
-			$this->assertIsNumeric($classAttribute->getLine());
-			$this->assertIsString($classAttribute->getFile());
 		}
 	}
 
