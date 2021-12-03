@@ -82,7 +82,7 @@ class ReflectionUtils {
 
 		$declaringFunction = $parameter->getDeclaringFunction();
 		throw new ReflectionErrorException('Unkown type defined for parameter: ' . $parameter->getName(),
-				$declaringFunction->getFileName(), $declaringFunction->getStartLine(), null, $e);
+				$declaringFunction->getFileName(), $declaringFunction->getStartLine(), null, null, $e);
 	}
 	
 	public static function extractMethodHierarchy(\ReflectionClass $class, $methodName) {
