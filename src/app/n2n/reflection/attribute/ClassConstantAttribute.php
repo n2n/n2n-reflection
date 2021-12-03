@@ -27,6 +27,7 @@ class ClassConstantAttribute extends AttributeAdapter {
 	}
 
 	public function getLine(): int {
+		if ($this->attribute === null) return -1;
 		return AttributeUtils::extractClassConstantAttributeLine($this->attribute, $this->constant);
 	}
 }

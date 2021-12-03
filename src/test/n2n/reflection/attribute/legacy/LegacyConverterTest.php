@@ -26,7 +26,9 @@ class LegacyConverterTest extends TestCase {
 
 		foreach($classAttributes as $classAttribute) {
 			$this->assertInstanceOf(ClassAttribute::class, $classAttribute);
-			$this->assertInstanceOf(\ReflectionAttribute::class, $classAttribute->getAttribute());
+			if ($classAttribute->getAttribute() !== null) {
+				$this->assertInstanceOf(\ReflectionAttribute::class, $classAttribute->getAttribute());
+			}
 			$this->assertIsNumeric($classAttribute->getLine());
 			$this->assertIsString($classAttribute->getFile());
 		}
@@ -40,7 +42,9 @@ class LegacyConverterTest extends TestCase {
 		foreach($propertyAttributes as $propertyAttributeArr) {
 			foreach ($propertyAttributeArr as $propertyAttribute) {
 				$this->assertInstanceOf(PropertyAttribute::class, $propertyAttribute);
-				$this->assertInstanceOf(\ReflectionAttribute::class, $propertyAttribute->getAttribute());
+				if ($propertyAttribute->getAttribute() !== null) {
+					$this->assertInstanceOf(\ReflectionAttribute::class, $propertyAttribute->getAttribute());
+				}
 				$this->assertIsNumeric($propertyAttribute->getLine());
 				$this->assertIsString($propertyAttribute->getFile());
 			}
@@ -63,7 +67,11 @@ class LegacyConverterTest extends TestCase {
 		foreach($methodAttributes as $methodAttributeArr) {
 			foreach ($methodAttributeArr as $methodAttribute) {
 				$this->assertInstanceOf(MethodAttribute::class, $methodAttribute);
-				$this->assertInstanceOf(\ReflectionAttribute::class, $methodAttribute->getAttribute());
+
+				if ($methodAttribute->getAttribute() !== null) {
+					$this->assertInstanceOf(\ReflectionAttribute::class, $methodAttribute->getAttribute());
+				}
+
 				$this->assertIsNumeric($methodAttribute->getLine());
 				$this->assertIsString($methodAttribute->getFile());
 			}

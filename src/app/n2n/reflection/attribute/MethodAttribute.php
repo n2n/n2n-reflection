@@ -31,6 +31,7 @@ class MethodAttribute extends AttributeAdapter {
 	}
 
 	public function getLine(): int {
+		if ($this->attribute === null) return -1;
 		return AttributeUtils::extractMethodAttributeLine($this->attribute, $this->method);
 	}
 }
