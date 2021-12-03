@@ -27,6 +27,7 @@ class ClassAttribute extends AttributeAdapter {
 	}
 
 	public function getLine(): int {
+		if ($this->attribute === null) return -1;
 		return AttributeUtils::extractClassAttributeLine($this->attribute, $this->class);
 	}
 }

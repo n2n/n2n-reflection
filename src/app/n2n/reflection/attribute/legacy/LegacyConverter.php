@@ -33,7 +33,13 @@ class LegacyConverter {
 		foreach ($this->annotationSet->getClassAnnotations() as $classAnnotation) {
 			if (!$classAnnotation instanceof LegacyAnnotation) continue;
 
-			$this->classAttributes[$classAnnotation->getAttributeName()] = $this->toAttr($classAnnotation);
+			$attributeName = $classAnnotation->getAttributeName();
+			if (!isset($this->classAttributes[$attributeName])) {
+				$this->classAttributes[$attributeName] = array();
+			}
+
+			$reflectorName = $classAnnotation->getAnnotatedClass()->getName();
+			$this->classAttributes[$attributeName][$reflectorName] = $this->toAttr($classAnnotation);
 		}
 
 		foreach ($this->annotationSet->getAllPropertyAnnotations() as $propertyAnnotation) {
@@ -65,10 +71,6 @@ class LegacyConverter {
 	 * @return ClassAttribute[]
 	 */
 	public function getClassAttributes() {
-		if ($this->classAttributes !== null) {
-			return $this->classAttributes;
-		}
-
 		return $this->classAttributes;
 	}
 
@@ -201,15 +203,10 @@ class LegacyConverter {
 	private function toAttr(LegacyAnnotation $annotation): Attribute {
 		$reflectionAttribute = null;
 		if ($annotation instanceof ClassAnnotation) {
-			$reflector = new \ReflectionClass($annotation::class);
 			$reflectionAttribute = ClassAttribute::fromInstance($annotation->toAttributeInstance(), $annotation->getAnnotatedClass());
 		} else if ($annotation instanceof PropertyAnnotation) {
-			$reflector = new \ReflectionClass($annotation);
-			$reflectionAttribute = current($reflector->getAttributes($annotation->getAttributeName()));
 			$reflectionAttribute = PropertyAttribute::fromInstance($annotation->toAttributeInstance(), $annotation->getAnnotatedProperty());
 		} else if ($annotation instanceof MethodAnnotation) {
-			$reflector = new \ReflectionClass($annotation);
-			$reflectionAttribute = current($reflector->getAttributes($annotation->getAttributeName()));
 			$reflectionAttribute = MethodAttribute::fromInstance($annotation->toAttributeInstance(), $annotation->getAnnotatedMethod());
 		}
 		return $reflectionAttribute;

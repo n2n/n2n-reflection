@@ -385,6 +385,7 @@ class AttributeSet {
 			$this->attributes[$type][$attributeName][$reflectorName] = $this->createAttribute($type, $attribute, $reflector);
 		}
 
+
 		$this->loadLegacyAttribute($type, $attributeName, $reflectorName);
 		$this->setLoaded(self::TYPE_PROPERTY, $attributeName);
 
