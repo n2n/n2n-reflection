@@ -108,7 +108,14 @@ class ReflectionUtils {
 	 * @deprecated works only if {@link n2n\core} module is present
 	 */
 	public static function createReflectionClass(string $typeName): \ReflectionClass {
-		TypeLoader::ensureTypeIsLoaded($typeName);
+		if (class_exists(TypeLoader::class, false)) {
+			TypeLoader::ensureTypeIsLoaded($typeName);
+		}
+
+		if (!class_exists($typeName)) {
+			throw new TypeNotFoundException('Type not found: ' + $typeName);
+		}
+
 		return new \ReflectionClass($typeName);
 	}
 	/**
