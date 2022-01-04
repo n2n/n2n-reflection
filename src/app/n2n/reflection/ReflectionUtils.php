@@ -110,9 +110,7 @@ class ReflectionUtils {
 	public static function createReflectionClass(string $typeName): \ReflectionClass {
 		if (class_exists(TypeLoader::class, false)) {
 			TypeLoader::ensureTypeIsLoaded($typeName);
-		}
-
-		if (!class_exists($typeName)) {
+		} else if (!class_exists($typeName)) {
 			throw new TypeNotFoundException('Type not found: ' . $typeName);
 		}
 
