@@ -113,7 +113,7 @@ class ReflectionUtils {
 		}
 
 		if (!class_exists($typeName)) {
-			throw new TypeNotFoundException('Type not found: ' + $typeName);
+			throw new TypeNotFoundException('Type not found: ' . $typeName);
 		}
 
 		return new \ReflectionClass($typeName);
