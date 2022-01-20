@@ -174,8 +174,8 @@ class PropertyAccessProxy implements AccessProxy {
 		if ($this->isPropertyAccessSetterMode()) {
 			try {
 				$this->property->setValue($object, $value);
-			} catch (\ReflectionException $e) {
-				throw new PropertyAccessException('Could not set value for property '
+			} catch (\ReflectionException|\TypeError $e) {
+				throw new PropertyAccessException('Could not set value for property. Reason: ' . $e->getMessage()
 						. $this->property->getDeclaringClass()->getName() . '::$' 
 						. $this->property->getName(), 0, $e);
 			}
