@@ -121,10 +121,10 @@ class ReflectionUtils {
 	 * @throws ObjectCreationFailedException
 	 * @return object
 	 */
-	public static function createObject(\ReflectionClass $class) {
+	public static function createObject(\ReflectionClass $class, bool $callConstructor = true) {
 		$args = array();
 		
-		if (null !== ($constructor = $class->getConstructor())) {
+		if ($callConstructor && null !== ($constructor = $class->getConstructor())) {
 			foreach ($constructor->getParameters() as $parameter) {
 				if ($parameter->isOptional()) continue;
 	
@@ -150,7 +150,11 @@ class ReflectionUtils {
 		}
 	
 		try {
-			return $class->newInstanceArgs($args);
+			if ($callConstructor) {
+				return $class->newInstanceArgs($args);
+			} else {
+				return $class->newInstanceWithoutConstructor();
+			}
 		} catch (\ReflectionException $e) {
 			throw new ObjectCreationFailedException('Could not create instance: ' 
 					. $class->getName(), 0, $e);
