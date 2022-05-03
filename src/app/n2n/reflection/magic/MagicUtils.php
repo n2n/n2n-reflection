@@ -28,6 +28,8 @@ use n2n\util\type\TypeUtils;
 
 class MagicUtils {
 	const MAGIC_INIT_METHOD = '_init';
+	const MAGIC_TERMINATE_METHOD = '_terminate';
+
 	/**
 	 * @param object $object
 	 * @param MagicContext $magicContext
@@ -36,6 +38,16 @@ class MagicUtils {
 		self::callMethodHierarchy(new \ReflectionClass($object), $object, 
 				self::MAGIC_INIT_METHOD, false, $magicContext);
 	}
+
+	/**
+	 * @param object $object
+	 * @param MagicContext $magicContext
+	 */
+	public static function terminate($object) {
+		self::callMethodHierarchy(new \ReflectionClass($object), $object,
+				self::MAGIC_TERMINATE_METHOD, false);
+	}
+
 	/**
 	 *
 	 * @param \ReflectionClass $class
