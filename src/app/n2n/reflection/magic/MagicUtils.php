@@ -34,7 +34,7 @@ class MagicUtils {
 	 * @param object $object
 	 * @param MagicContext $magicContext
 	 */
-	public static function init($object, MagicContext $magicContext = null) {
+	public static function init(object $object, MagicContext $magicContext = null) {
 		self::callMethodHierarchy(new \ReflectionClass($object), $object, 
 				self::MAGIC_INIT_METHOD, false, $magicContext);
 	}
@@ -43,7 +43,7 @@ class MagicUtils {
 	 * @param object $object
 	 * @param MagicContext $magicContext
 	 */
-	public static function terminate($object) {
+	public static function terminate(object $object) {
 		self::callMethodHierarchy(new \ReflectionClass($object), $object,
 				self::MAGIC_TERMINATE_METHOD, false);
 	}
