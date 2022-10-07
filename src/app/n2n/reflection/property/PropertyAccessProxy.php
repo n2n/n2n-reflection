@@ -27,6 +27,7 @@ use n2n\util\type\TypeUtils;
 use n2n\util\type\TypeConstraint;
 use n2n\util\type\ValueIncompatibleWithConstraintsException;
 use n2n\util\type\TypeConstraints;
+use n2n\util\ex\UnsupportedOperationException;
 
 class PropertyAccessProxy implements AccessProxy {
 	private $propertyName;
@@ -35,8 +36,10 @@ class PropertyAccessProxy implements AccessProxy {
 	private $getterMethod;
 	private $forcePropertyAccess;
 	private $baseConstraint;
-	private $constraint;
+	private TypeConstraint $constraint;
 	private $nullReturnAllowed = false;
+	private TypeConstraint $getterConstraint;
+	private TypeConstraint $setterConstraint;
 
 	public function __construct($propertyName, \ReflectionProperty $property = null, 
 			\ReflectionMethod $getterMethod = null, \ReflectionMethod $setterMethod = null) {
@@ -44,13 +47,6 @@ class PropertyAccessProxy implements AccessProxy {
 		$this->property = $property;
 		$this->getterMethod = $getterMethod;
 		$this->setterMethod = $setterMethod;
-
-		if ($setterMethod === null) {
-			$this->constraint = $this->baseConstraint = TypeConstraint::createSimple(null);
-		} else {
-			$parameter = current($setterMethod->getParameters());
-			$this->constraint = $this->baseConstraint = TypeConstraints::type($parameter);
-		}
 	}
 	
 	public function getBaseConstraint() {
@@ -97,28 +93,53 @@ class PropertyAccessProxy implements AccessProxy {
 	 * @return \n2n\util\type\TypeConstraint
 	 */
 	public function getConstraint(): TypeConstraint {
-		return $this->constraint;
+		return $this->constraint ?? $this->getSetterConstraint();
 	}
 
-	public function setConstraint(TypeConstraint $constraints) {
-		if ($constraints->isPassableTo($this->baseConstraint)) {
-			$this->constraint = $constraints;
+	public function setConstraint(TypeConstraint $constraint) {
+		if ($constraint->isPassableTo($this->baseConstraint)) {
+			$this->constraint = $constraint;
 			return;
 		}
 
 		if (null === $this->setterMethod) {
 			throw new ConstraintsConflictException('Constraints conflict for property ' 
 					. $this->property->getDeclaringClass()->getName() . '::$' 
-					. $this->property->getName() . '. Constraints ' . $constraints->__toString() 
+					. $this->property->getName() . '. Constraints ' . $constraint->__toString()
 					. ' are not compatible with ' . $this->baseConstraint->__toString());
 		} else {
 			throw new ConstraintsConflictException('Constraints conflict for setter-method ' 
 							. $this->setterMethod->getDeclaringClass()->getName() . '::' 
-							. $this->setterMethod->getName() . '(). Constraints ' . $constraints->__toString() 
+							. $this->setterMethod->getName() . '(). Constraints ' . $constraint->__toString()
 							. ' are not compatible with ' . $this->baseConstraint->__toString(),
 					0, null, $this->setterMethod);
 		}
-		
+	}
+
+	function getSetterConstraint(): TypeConstraint {
+		if (isset($this->setterConstraint)) {
+			return $this->setterConstraint;
+		}
+
+		if ($this->setterMethod !== null) {
+			$parameter = current($this->setterMethod->getParameters());
+			return $this->constraint = $this->baseConstraint = TypeConstraints::type($parameter);
+		}
+
+		return $this->constraint = $this->baseConstraint = TypeConstraints::type($this->property?->getType());
+	}
+
+	function getGetterConstraint(): TypeConstraint {
+		if (isset($this->getterConstraint)) {
+			return $this->getterConstraint;
+		}
+
+		if ($this->getterMethod !== null) {
+			$parameter = current($this->getterMethod->getParameters());
+			return $this->constraint = $this->baseConstraint = TypeConstraints::type($parameter);
+		}
+
+		return $this->constraint = $this->baseConstraint = TypeConstraints::type($this->property?->getType());
 	}
 
 	public function setForcePropertyAccess($forcePropertyAccess) {
@@ -134,11 +155,11 @@ class PropertyAccessProxy implements AccessProxy {
 		return $this->forcePropertyAccess || null === $this->getterMethod;
 	}
 
-	private function createConstraintsConflictException(TypeConstraint $invalidConstraints) {
-		
-	}
-
-	private function createPassedValueException(ValueIncompatibleWithConstraintsException $e) {
+	/**
+	 * @param ValueIncompatibleWithConstraintsException $e
+	 * @return PropertyValueTypeMissmatchException
+	 */
+	public function createPassedValueException(ValueIncompatibleWithConstraintsException $e) {
 		if ($this->isPropertyAccessSetterMode()) {
 			return new PropertyValueTypeMissmatchException('Passed value for ' 
 					. $this->property->getDeclaringClass()->getName() . '::$' . $this->property->getName() 
@@ -149,8 +170,12 @@ class PropertyAccessProxy implements AccessProxy {
 					. '() is disallowed for property setter method.', 0, $e);
 		}
 	}
-	
-	private function createReturnedValueException(ValueIncompatibleWithConstraintsException $e) {
+
+	/**
+	 * @param ValueIncompatibleWithConstraintsException $e
+	 * @return PropertyValueTypeMissmatchException
+	 */
+	public function createReturnedValueException(ValueIncompatibleWithConstraintsException $e) {
 		if ($this->isPropertyAccessGetterMode()) {
 			return new PropertyValueTypeMissmatchException('Property ' 
 					. $this->property->getDeclaringClass()->getName() . '::$' 
@@ -162,7 +187,7 @@ class PropertyAccessProxy implements AccessProxy {
 		}
 	}
 
-	public function setValue(object $object, $value, bool $validate = true) {
+	public function setValue(object $object, mixed $value, bool $validate = true): void {
 		if (isset($this->constraint) && $validate) {
 			try {
 				$value = $this->constraint->validate($value);
@@ -191,7 +216,7 @@ class PropertyAccessProxy implements AccessProxy {
 		}				
 	}
 
-	public function getValue(object $object) {
+	public function getValue(object $object): mixed {
 		$value = null;
 
 		if ($this->isPropertyAccessGetterMode()) {			
@@ -262,5 +287,9 @@ class PropertyAccessProxy implements AccessProxy {
 		}
 		
 		return 'AccessProxy [' . implode(', ', $strs) . ']';
+	}
+
+	function createRestricted(TypeConstraint $getterConstraint = null, TypeConstraint $setterConstraint = null): AccessProxy {
+		throw new UnsupportedOperationException();
 	}
 }

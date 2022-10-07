@@ -22,38 +22,66 @@
 namespace n2n\reflection\property;
 
 use n2n\util\type\TypeConstraint;
+use n2n\util\type\ValueIncompatibleWithConstraintsException;
 
 interface AccessProxy {
 	/**
 	 * @return string 
 	 */
 	public function getPropertyName(): string;
+
 	/**
 	 * @return TypeConstraint
+	 * @deprecated
 	 */
 	public function getConstraint(): TypeConstraint;
+
 	/**
 	 * @param TypeConstraint $constraint
 	 * @throws ConstraintsConflictException
+	 * @deprecated
 	 */
 	public function setConstraint(TypeConstraint $constraint);
+
+	/**
+	 * @return TypeConstraint
+	 */
+	function getGetterConstraint(): TypeConstraint;
+
+	/**
+	 * @return TypeConstraint
+	 */
+	function getSetterConstraint(): TypeConstraint;
+
+	/**
+	 * @param TypeConstraint|null $getterConstraint
+	 * @param TypeConstraint|null $setterConstraint
+	 * @return AccessProxy
+	 */
+	function createRestricted(TypeConstraint $getterConstraint = null,
+			TypeConstraint $setterConstraint = null): AccessProxy;
+
 	/**
 	 * @param object $object
 	 * @param mixed $value
-	 * @param string $validate
+	 * @param bool $validate
+	 * @throws PropertyAccessException
 	 */
-	public function setValue(object $object, $value, bool $validate = true);
+	public function setValue(object $object, mixed $value, bool $validate = true): void;
 	/**
 	 * @param object $object
 	 * @return mixed
+	 * @throws PropertyAccessException
 	 */
-	public function getValue(object $object);
+	public function getValue(object $object): mixed;
 	/**
 	 * @param bool $nullReturnAllowed
+	 * @deprecated
 	 */
 	public function setNullReturnAllowed($nullReturnAllowed);
 	/**
 	 * @return boolean
+	 * @deprecated
 	 */
 	public function isNullReturnAllowed();
 	
