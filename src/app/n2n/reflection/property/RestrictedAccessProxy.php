@@ -16,6 +16,10 @@ class RestrictedAccessProxy implements AccessProxy {
 		return $this->propertyAccessProxy->getPropertyName();
 	}
 
+	function getProperty() {
+		return $this->propertyAccessProxy->getProperty();
+	}
+
 	public function getConstraint(): TypeConstraint {
 		throw new UnsupportedOperationException();
 	}
