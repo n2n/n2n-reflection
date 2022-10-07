@@ -65,11 +65,11 @@ class PropertyAccessProxy implements AccessProxy {
 		return $this->property;
 	}
 	
-	public function isReadable() {
+	public function isReadable(): bool {
 		return (isset($this->property) && $this->property->isPublic()) || isset($this->getterMethod);
 	}
 	
-	public function isWritable() {
+	public function isWritable(): bool {
 		return (isset($this->property) && $this->property->isPublic()) || isset($this->setterMethod);
 	}
 	
@@ -135,8 +135,8 @@ class PropertyAccessProxy implements AccessProxy {
 		}
 
 		if ($this->getterMethod !== null) {
-			$parameter = current($this->getterMethod->getParameters());
-			return $this->constraint = $this->baseConstraint = TypeConstraints::type($parameter);
+			return $this->constraint = $this->baseConstraint = TypeConstraints::type(
+					$this->getterMethod->getReturnType());
 		}
 
 		return $this->constraint = $this->baseConstraint = TypeConstraints::type($this->property?->getType());
@@ -290,6 +290,6 @@ class PropertyAccessProxy implements AccessProxy {
 	}
 
 	function createRestricted(TypeConstraint $getterConstraint = null, TypeConstraint $setterConstraint = null): AccessProxy {
-		throw new UnsupportedOperationException();
+		return new RestrictedAccessProxy($this, $getterConstraint, $setterConstraint);
 	}
 }

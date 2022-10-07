@@ -24,8 +24,16 @@ class RestrictedAccessProxy implements AccessProxy {
 		throw new UnsupportedOperationException();
 	}
 
+	function isReadable(): bool {
+		return $this->propertyAccessProxy->isReadable();
+	}
+
 	function getGetterConstraint(): TypeConstraint {
 		return $this->getterConstraint ?? $this->propertyAccessProxy->getGetterConstraint();
+	}
+
+	function isWritable(): bool {
+		return $this->propertyAccessProxy->isWritable();
 	}
 
 	function getSetterConstraint(): TypeConstraint {
@@ -59,14 +67,18 @@ class RestrictedAccessProxy implements AccessProxy {
 	}
 
 	public function setNullReturnAllowed($nullReturnAllowed) {
-		// TODO: Implement setNullReturnAllowed() method.
+		throw new UnsupportedOperationException();
 	}
 
 	public function isNullReturnAllowed() {
-		// TODO: Implement isNullReturnAllowed() method.
+		throw new UnsupportedOperationException();
 	}
 
 	public function __toString(): string {
-		// TODO: Implement __toString() method.
+		return $this->propertyAccessProxy->__toString();
+	}
+
+	function createRestricted(TypeConstraint $getterConstraint = null, TypeConstraint $setterConstraint = null): AccessProxy {
+		throw new UnsupportedOperationException();
 	}
 }

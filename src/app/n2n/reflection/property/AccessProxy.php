@@ -49,9 +49,19 @@ interface AccessProxy {
 	function getGetterConstraint(): TypeConstraint;
 
 	/**
+	 * @return bool
+	 */
+	function isReadable(): bool;
+
+	/**
 	 * @return TypeConstraint
 	 */
 	function getSetterConstraint(): TypeConstraint;
+
+	/**
+	 * @return bool
+	 */
+	function isWritable(): bool;
 
 	/**
 	 * @param TypeConstraint|null $getterConstraint
