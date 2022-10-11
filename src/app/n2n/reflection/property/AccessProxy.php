@@ -23,12 +23,9 @@ namespace n2n\reflection\property;
 
 use n2n\util\type\TypeConstraint;
 use n2n\util\type\ValueIncompatibleWithConstraintsException;
+use n2n\util\ex\IllegalStateException;
 
 interface AccessProxy {
-	/**
-	 * @return string 
-	 */
-	public function getPropertyName(): string;
 
 	/**
 	 * @return TypeConstraint
@@ -45,6 +42,7 @@ interface AccessProxy {
 
 	/**
 	 * @return TypeConstraint
+	 * @throws IllegalStateException if {@link self::isReadable()} returns false.
 	 */
 	function getGetterConstraint(): TypeConstraint;
 
@@ -55,6 +53,7 @@ interface AccessProxy {
 
 	/**
 	 * @return TypeConstraint
+	 * @throws IllegalStateException if {@link self::isWritable()} returns false.
 	 */
 	function getSetterConstraint(): TypeConstraint;
 

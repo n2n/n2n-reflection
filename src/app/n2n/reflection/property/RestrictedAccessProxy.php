@@ -64,7 +64,7 @@ class RestrictedAccessProxy implements AccessProxy {
 		}
 
 		try {
-			return $this->setterConstraint->validate($value);
+			return $this->getterConstraint->validate($value);
 		} catch (ValueIncompatibleWithConstraintsException $e) {
 			throw $this->propertyAccessProxy->createRestricted($e);
 		}

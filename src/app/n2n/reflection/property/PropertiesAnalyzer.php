@@ -62,9 +62,9 @@ class PropertiesAnalyzer {
 	/**
 	 * @param bool $includePrivate
 	 * @param bool $checkIfAcessable
-	 * @return \n2n\reflection\property\PropertyAccessProxy[] 
+	 * @return PropertyAccessProxy[]
 	 */
-	public function analyzeProperties($includePrivate = false, $checkIfAcessable = true) {
+	public function analyzeProperties(bool $includePrivate = false, bool $checkIfAcessable = true) {
 		$accessProxies = array();
 		
 		$visiblity = \ReflectionProperty::IS_PROTECTED|\ReflectionProperty::IS_PUBLIC;
@@ -76,9 +76,9 @@ class PropertiesAnalyzer {
 			}
 			
 			if ($this->ignoreAccessMethods) {
-				$accessProxies[$property->getName()] = new PropertyAccessProxy($property->getName(), $property, null, null);
+				$accessProxies[$property->getName()] = new ReflectionAccessProxy($property->getName(), $property, null, null);
 			} else {
-				$accessProxies[$property->getName()] = new PropertyAccessProxy($property->getName(), $property, 
+				$accessProxies[$property->getName()] = new ReflectionAccessProxy($property->getName(), $property,
 						$this->getGetterMethod($property->getName(), $checkIfAcessable && !$property->isPublic(), $property),
 						$this->getSetterMethod($property->getName(), $checkIfAcessable && !$property->isPublic(), $property));
 			}
@@ -103,7 +103,7 @@ class PropertiesAnalyzer {
 		}
 		
 		if ($this->ignoreAccessMethods) {
-			return new PropertyAccessProxy($propertyName, $property, null, null);
+			return new ReflectionAccessProxy($propertyName, $property, null, null);
 		}
 
 		$setterMethod = $this->getSetterMethod($propertyName,
@@ -111,7 +111,7 @@ class PropertiesAnalyzer {
 		$getterMethod = $this->getGetterMethod($propertyName, ($property === null && $setterMethod === null)
 				|| (($property === null || !$property->isPublic()) && $gettingRequired), $property);
 
-		return new PropertyAccessProxy($propertyName, $property, $getterMethod, $setterMethod);
+		return new ReflectionAccessProxy($propertyName, $property, $getterMethod, $setterMethod);
 	}
 	
 	private function scoutForPropertyMethods($propertyName) {

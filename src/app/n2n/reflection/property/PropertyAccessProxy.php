@@ -21,275 +21,34 @@
  */
 namespace n2n\reflection\property;
 
-use n2n\reflection\ReflectionUtils;
-use n2n\util\type\ArgUtils;
-use n2n\util\type\TypeUtils;
 use n2n\util\type\TypeConstraint;
 use n2n\util\type\ValueIncompatibleWithConstraintsException;
-use n2n\util\type\TypeConstraints;
-use n2n\util\ex\UnsupportedOperationException;
+use ReflectionProperty;
+use ReflectionMethod;
+use Throwable;
 
-class PropertyAccessProxy implements AccessProxy {
-	private $propertyName;
-	private $property;
-	private $setterMethod;
-	private $getterMethod;
-	private $forcePropertyAccess;
-	private $baseConstraint;
-	private TypeConstraint $constraint;
-	private $nullReturnAllowed = false;
-	private TypeConstraint $getterConstraint;
-	private TypeConstraint $setterConstraint;
+interface PropertyAccessProxy extends AccessProxy {
 
-	public function __construct($propertyName, \ReflectionProperty $property = null, 
-			\ReflectionMethod $getterMethod = null, \ReflectionMethod $setterMethod = null) {
-		$this->propertyName = $propertyName;
-		$this->property = $property;
-		$this->getterMethod = $getterMethod;
-		$this->setterMethod = $setterMethod;
-	}
-	
-	public function getBaseConstraint() {
-		return $this->baseConstraint;
-	}
-	
-	public function isNullPossible() {
-		return $this->baseConstraint->allowsNull();
-	}
-	
-	public function getPropertyName(): string {
-		return $this->propertyName;
-	}
-
-	public function getProperty() {
-		return $this->property;
-	}
-	
-	public function isReadable(): bool {
-		return (isset($this->property) && $this->property->isPublic()) || isset($this->getterMethod);
-	}
-	
-	public function isWritable(): bool {
-		return (isset($this->property) && $this->property->isPublic()) || isset($this->setterMethod);
-	}
-	
-	public function isNullReturnAllowed() {
-		return $this->nullReturnAllowed;
-	}
-	
-	public function setNullReturnAllowed($nullReturnAllowed) {
-		$this->nullReturnAllowed = $nullReturnAllowed;
-	}
-
-	public function getSetterMethod() {
-		return $this->setterMethod;
-	}
-
-	public function getGetterMethod() {
-		return $this->getterMethod;
-	}
 	/**
-	 *
-	 * @return \n2n\util\type\TypeConstraint
+	 * @return string
 	 */
-	public function getConstraint(): TypeConstraint {
-		return $this->constraint ?? $this->getSetterConstraint();
-	}
+	function getPropertyName(): string;
 
-	public function setConstraint(TypeConstraint $constraint) {
-		if ($constraint->isPassableTo($this->baseConstraint)) {
-			$this->constraint = $constraint;
-			return;
-		}
+	function getProperty(): ?ReflectionProperty;
 
-		if (null === $this->setterMethod) {
-			throw new ConstraintsConflictException('Constraints conflict for property ' 
-					. $this->property->getDeclaringClass()->getName() . '::$' 
-					. $this->property->getName() . '. Constraints ' . $constraint->__toString()
-					. ' are not compatible with ' . $this->baseConstraint->__toString());
-		} else {
-			throw new ConstraintsConflictException('Constraints conflict for setter-method ' 
-							. $this->setterMethod->getDeclaringClass()->getName() . '::' 
-							. $this->setterMethod->getName() . '(). Constraints ' . $constraint->__toString()
-							. ' are not compatible with ' . $this->baseConstraint->__toString(),
-					0, null, $this->setterMethod);
-		}
-	}
+	function getSetterMethod(): ?ReflectionMethod;
 
-	function getSetterConstraint(): TypeConstraint {
-		if (isset($this->setterConstraint)) {
-			return $this->setterConstraint;
-		}
-
-		if ($this->setterMethod !== null) {
-			$parameter = current($this->setterMethod->getParameters());
-			return $this->constraint = $this->baseConstraint = TypeConstraints::type($parameter);
-		}
-
-		return $this->constraint = $this->baseConstraint = TypeConstraints::type($this->property?->getType());
-	}
-
-	function getGetterConstraint(): TypeConstraint {
-		if (isset($this->getterConstraint)) {
-			return $this->getterConstraint;
-		}
-
-		if ($this->getterMethod !== null) {
-			return $this->constraint = $this->baseConstraint = TypeConstraints::type(
-					$this->getterMethod->getReturnType());
-		}
-
-		return $this->constraint = $this->baseConstraint = TypeConstraints::type($this->property?->getType());
-	}
-
-	public function setForcePropertyAccess($forcePropertyAccess) {
-		$this->property->setAccessible((boolean) $forcePropertyAccess);
-		$this->forcePropertyAccess = (boolean) $forcePropertyAccess;
-	}
-
-	public function isPropertyAccessSetterMode() {
-		return $this->forcePropertyAccess || null === $this->setterMethod;
-	}
-	
-	public function isPropertyAccessGetterMode() {
-		return $this->forcePropertyAccess || null === $this->getterMethod;
-	}
+	function getGetterMethod(): ?ReflectionMethod;
 
 	/**
-	 * @param ValueIncompatibleWithConstraintsException $e
+	 * @param Throwable $previous
 	 * @return PropertyValueTypeMissmatchException
 	 */
-	public function createPassedValueException(ValueIncompatibleWithConstraintsException $e) {
-		if ($this->isPropertyAccessSetterMode()) {
-			return new PropertyValueTypeMissmatchException('Passed value for ' 
-					. $this->property->getDeclaringClass()->getName() . '::$' . $this->property->getName() 
-					. ' is incompatible with constraints.', 0, $e);
-		} else {
-			return new PropertyValueTypeMissmatchException('Passed value for ' 
-					. $this->setterMethod->getDeclaringClass()->getName() . '::' . $this->setterMethod->getName() 
-					. '() is disallowed for property setter method.', 0, $e);
-		}
-	}
+	function createPassedValueException(Throwable $previous): PropertyValueTypeMissmatchException;
 
 	/**
-	 * @param ValueIncompatibleWithConstraintsException $e
+	 * @param Throwable $previous
 	 * @return PropertyValueTypeMissmatchException
 	 */
-	public function createReturnedValueException(ValueIncompatibleWithConstraintsException $e) {
-		if ($this->isPropertyAccessGetterMode()) {
-			return new PropertyValueTypeMissmatchException('Property ' 
-					. $this->property->getDeclaringClass()->getName() . '::$' 
-					. $this->property->getName() . ' contains unexpected type.', 0, $e);
-		} else {
-			return new PropertyValueTypeMissmatchException('Getter method ' 
-					. $this->getterMethod->getDeclaringClass()->getName() . '::' 
-					. $this->getterMethod->getName() . '()  returns unexpected type', 0, $e);
-		}
-	}
-
-	public function setValue(object $object, mixed $value, bool $validate = true): void {
-		if (isset($this->constraint) && $validate) {
-			try {
-				$value = $this->constraint->validate($value);
-			} catch (ValueIncompatibleWithConstraintsException $e) {
-				throw $this->createPassedValueException($e);
-			}
-		}
-
-		if ($this->isPropertyAccessSetterMode()) {
-			try {
-				$this->property->setValue($object, $value);
-			} catch (\ReflectionException|\TypeError $e) {
-				throw new PropertyAccessException('Could not set value for property. Reason: ' . $e->getMessage()
-						. $this->property->getDeclaringClass()->getName() . '::$' 
-						. $this->property->getName(), 0, $e);
-			}
-				
-			return;
-		}
-
-		$setterMethod = $this->findMethod($object, $this->setterMethod);
-		try {
-			$setterMethod->invoke($object, $value);
-		} catch (\ReflectionException $e) {
-			throw $this->createMethodInvokeException($setterMethod, $e);
-		}				
-	}
-
-	public function getValue(object $object): mixed {
-		$value = null;
-
-		if ($this->isPropertyAccessGetterMode()) {			
-			try {
-				$value = $this->property->getValue($object);
-			} catch (\ReflectionException $e) {
-				throw new PropertyAccessException('Could not get value of property '
-								.  $this->property->getDeclaringClass()->getName() . '::$' 
-						. $this->property->getName() . ' (Read from object type ' . get_class($object) . ')', 0, $e);
-			}
-		} else {
-			$getterMethod = $this->findMethod($object, $this->getterMethod);
-			try {
-				$value = $getterMethod->invoke($object);
-			} catch (\ReflectionException $e) {
-				throw $this->createMethodInvokeException($getterMethod, $e, $object);
-			}
-		}
-		
-		if ($value === null && $this->nullReturnAllowed) return $value;
-		
-		try {
-			$value = $this->constraint->validate($value);
-		} catch (ValueIncompatibleWithConstraintsException $e) {
-			throw $this->createReturnedValueException($e);
-		}
-		
-		return $value;
-	}
-	
-	private function findMethod($object, \ReflectionMethod $method) {
-		$declaringClass = $method->getDeclaringClass();
-		if (get_class($object) == $declaringClass->getName()) {
-			return $method;
-		}
-	
-		$objectClass = new \ReflectionClass($object);
-		if (!ReflectionUtils::isClassA($objectClass, $declaringClass)) {
-			return $method;
-		}
-	
-		return $objectClass->getMethod($method->getName());
-	}
-	
-	public function createMethodInvokeException(\ReflectionMethod $method, \Exception $previous, $object = null) {
-		$message = 'Reflection execution of ' . TypeUtils::prettyReflMethName($method). ' failed.';
-				
-		if ($object !== null && !ReflectionUtils::isObjectA($object, $method->getDeclaringClass())) {
-			$message .= ' Reason: Type of ' . get_class($object) . ' passed as object, type of ' 
-					. $method->getDeclaringClass()->getName() . ' expected.';
-		}
-		
-		throw new PropertyAccessException($message, 0, $previous);
-	}
-	
-	public function __toString(): string {
-		if ($this->isPropertyAccessGetterMode() && $this->isPropertyAccessSetterMode()) {
-			return 'AccessProxy [' . ($this->property !== null ? TypeUtils::prettyReflPropName($this->property) 
-					: TypeUtils::prettyPropName('<unknown class>', $this->propertyName) . ']');
-		}
-		
-		$strs = array();
-		if ($this->getterMethod !== null) {
-			$strs[] = TypeUtils::prettyReflMethName($this->getterMethod);
-		}
-		if ($this->setterMethod !== null) {
-			$strs[] = TypeUtils::prettyReflMethName($this->setterMethod);
-		}
-		
-		return 'AccessProxy [' . implode(', ', $strs) . ']';
-	}
-
-	function createRestricted(TypeConstraint $getterConstraint = null, TypeConstraint $setterConstraint = null): AccessProxy {
-		return new RestrictedAccessProxy($this, $getterConstraint, $setterConstraint);
-	}
+	public function createReturnedValueException(Throwable $previous): PropertyValueTypeMissmatchException;
 }
