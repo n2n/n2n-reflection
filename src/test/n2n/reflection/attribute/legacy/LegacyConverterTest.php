@@ -23,15 +23,14 @@ class LegacyConverterTest extends TestCase {
 		$attributeSet = new LegacyConverter(AnnotationSetFactory::create($this->mockClass));
 
 		$classAttributes = $attributeSet->getClassAttributes();
-		foreach ($classAttributes as $classAttributeArr) {
-			foreach($classAttributeArr as $classAttribute) {
-				$this->assertInstanceOf(ClassAttribute::class, $classAttribute);
-				if ($classAttribute->getAttribute() !== null) {
-					$this->assertInstanceOf(\ReflectionAttribute::class, $classAttribute->getAttribute());
-				}
-				$this->assertIsNumeric($classAttribute->getLine());
-				$this->assertIsString($classAttribute->getFile());
+		$this->assertNotEmpty($classAttributes);
+		foreach ($classAttributes as $classAttribute) {
+			$this->assertInstanceOf(ClassAttribute::class, $classAttribute);
+			if ($classAttribute->getAttribute() !== null) {
+				$this->assertInstanceOf(\ReflectionAttribute::class, $classAttribute->getAttribute());
 			}
+			$this->assertIsNumeric($classAttribute->getLine());
+			$this->assertIsString($classAttribute->getFile());
 		}
 	}
 
@@ -90,9 +89,9 @@ class LegacyConverterTest extends TestCase {
 	public function testAttributeSetLegacyIntegration() {
 		$attributeSet = new AttributeSet($this->mockClass);
 
-		$this->assertCount(3, $attributeSet->getClassAttributes());
-		$this->assertTrue($attributeSet->hasClassAttribute(AttrA::class));
-		$this->assertTrue($attributeSet->hasClassAttribute(AttrA::class));
+		$this->assertCount(2, $attributeSet->getClassAttributes());
+		$this->assertTrue($attributeSet->hasClassAttribute(AttrB::class));
+		$this->assertTrue($attributeSet->hasClassAttribute(AttrC::class));
 		$this->assertTrue($attributeSet->hasPropertyAttribute('publicProperty', AttrB::class));
 		$this->assertTrue($attributeSet->hasMethodAttribute('protectedMethod', AttrC::class));
 		$this->assertFalse($attributeSet->hasMethodAttribute('privateMethod', AttrC::class));
