@@ -34,14 +34,10 @@ class LegacyConverter {
 			if (!$classAnnotation instanceof LegacyAnnotation) continue;
 
 			$attributeName = $classAnnotation->getAttributeName();
-			if (!isset($this->classAttributes[$attributeName])) {
-				$this->classAttributes[$attributeName] = array();
-			}
 
 			$annotatedClass = $classAnnotation->getAnnotatedClass();
-			$reflectorName = $annotatedClass->getName();
 			$attr = ClassAttribute::fromInstance($classAnnotation->toAttributeInstance(), $annotatedClass);
-			$this->classAttributes[$attributeName][$reflectorName] = $attr;
+			$this->classAttributes[$attributeName] = $attr;
 		}
 
 		foreach ($this->annotationSet->getAllPropertyAnnotations() as $propertyAnnotation) {
