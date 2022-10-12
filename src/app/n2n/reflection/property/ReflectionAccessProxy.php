@@ -50,7 +50,7 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	}
 	
 	public function getBaseConstraint() {
-		return $this->baseConstraint;
+		return $this->baseConstraint ?? $this->getSetterConstraint();;
 	}
 	
 	public function isNullPossible() {
@@ -97,7 +97,7 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	}
 
 	public function setConstraint(TypeConstraint $constraint) {
-		if ($constraint->isPassableTo($this->baseConstraint)) {
+		if ($constraint->isPassableTo($this->getBaseConstraint())) {
 			$this->constraint = $constraint;
 			return;
 		}
