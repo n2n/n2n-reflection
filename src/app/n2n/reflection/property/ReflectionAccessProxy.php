@@ -286,7 +286,7 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 		return 'AccessProxy [' . implode(', ', $strs) . ']';
 	}
 
-	function createRestricted(TypeConstraint $getterConstraint = null, TypeConstraint $setterConstraint = null): AccessProxy {
+	function createRestricted(TypeConstraint $getterConstraint = null, TypeConstraint $setterConstraint = null): PropertyAccessProxy {
 		return new RestrictedAccessProxy($this, $getterConstraint, $setterConstraint);
 	}
 }

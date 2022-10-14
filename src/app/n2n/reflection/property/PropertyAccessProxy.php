@@ -40,6 +40,9 @@ interface PropertyAccessProxy extends AccessProxy {
 
 	function getGetterMethod(): ?ReflectionMethod;
 
+	function createRestricted(TypeConstraint $getterConstraint = null,
+			TypeConstraint $setterConstraint = null): PropertyAccessProxy;
+
 	/**
 	 * @param Throwable $previous
 	 * @return PropertyValueTypeMissmatchException
