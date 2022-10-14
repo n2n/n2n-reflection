@@ -26,8 +26,9 @@ use n2n\reflection\ReflectionException;
 class InaccessiblePropertyException extends ReflectionException {
 	private $property;
 	
-	public function __construct(\ReflectionProperty $property = null, $message, $code = null, \Exception $previous = null) {
-		parent::__construct($message, $code, $previous);
+	public function __construct(\ReflectionProperty $property = null, string $message = null, int $code = null,
+			\Exception $previous = null) {
+		parent::__construct($message ?? '', $code ?? 0, $previous);
 		$this->property = $property;
 	}
 	
