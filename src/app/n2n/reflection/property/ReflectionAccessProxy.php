@@ -28,6 +28,7 @@ use n2n\util\type\TypeConstraint;
 use n2n\util\type\ValueIncompatibleWithConstraintsException;
 use n2n\util\type\TypeConstraints;
 use n2n\util\ex\UnsupportedOperationException;
+use n2n\util\ex\IllegalStateException;
 
 class ReflectionAccessProxy implements PropertyAccessProxy {
 	private $propertyName;
@@ -35,8 +36,7 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	private $setterMethod;
 	private $getterMethod;
 	private $forcePropertyAccess;
-	private $baseConstraint;
-	private TypeConstraint $constraint;
+	private ?TypeConstraint $constraint = null;
 	private $nullReturnAllowed = false;
 	private TypeConstraint $getterConstraint;
 	private TypeConstraint $setterConstraint;
@@ -50,11 +50,11 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	}
 	
 	public function getBaseConstraint() {
-		return $this->baseConstraint ?? $this->getSetterConstraint();;
+		return $this->isWritable() ? $this->getSetterConstraint() : $this->getGetterConstraint();
 	}
 	
 	public function isNullPossible() {
-		return $this->baseConstraint->allowsNull();
+		return $this->getBaseConstraint()->allowsNull();
 	}
 	
 	public function getPropertyName(): string {
@@ -66,11 +66,13 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	}
 	
 	public function isReadable(): bool {
-		return (isset($this->property) && $this->property->isPublic()) || isset($this->getterMethod);
+		return (isset($this->property) && ($this->forcePropertyAccess || $this->property->isPublic()))
+				|| isset($this->getterMethod);
 	}
 	
 	public function isWritable(): bool {
-		return (isset($this->property) && $this->property->isPublic()) || isset($this->setterMethod);
+		return (isset($this->property) && ($this->forcePropertyAccess || $this->property->isPublic()))
+				|| isset($this->setterMethod);
 	}
 	
 	public function isNullReturnAllowed() {
@@ -123,10 +125,14 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 
 		if ($this->setterMethod !== null) {
 			$parameter = current($this->setterMethod->getParameters());
-			return $this->constraint = $this->baseConstraint = TypeConstraints::type($parameter);
+			return $this->setterConstraint = TypeConstraints::type($parameter);
 		}
 
-		return $this->constraint = $this->baseConstraint = TypeConstraints::type($this->property?->getType());
+		if (!$this->isWritable()) {
+			throw new IllegalStateException($this . ' not writable.');
+		}
+
+		return $this->setterConstraint = TypeConstraints::type($this->property->getType());
 	}
 
 	function getGetterConstraint(): TypeConstraint {
@@ -135,11 +141,15 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 		}
 
 		if ($this->getterMethod !== null) {
-			return $this->constraint = $this->baseConstraint = TypeConstraints::type(
+			return $this->getterConstraint = TypeConstraints::type(
 					$this->getterMethod->getReturnType());
 		}
 
-		return $this->constraint = $this->baseConstraint = TypeConstraints::type($this->property?->getType());
+		if (!$this->isReadable()) {
+			throw new IllegalStateException($this . ' not readable.');
+		}
+
+		return $this->getterConstraint = TypeConstraints::type($this->property?->getType());
 	}
 
 	public function setForcePropertyAccess($forcePropertyAccess) {
@@ -213,6 +223,10 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 		}				
 	}
 
+	/**
+	 * @throws PropertyValueTypeMissmatchException
+	 * @throws PropertyAccessException
+	 */
 	public function getValue(object $object): mixed {
 		$value = null;
 
@@ -233,7 +247,9 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 			}
 		}
 		
-		if ($value === null && $this->nullReturnAllowed) return $value;
+		if ($this->constraint === null || ($value === null && $this->nullReturnAllowed)) {
+			return $value;
+		}
 		
 		try {
 			$value = $this->constraint->validate($value);
@@ -272,7 +288,7 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	public function __toString(): string {
 		if ($this->isPropertyAccessGetterMode() && $this->isPropertyAccessSetterMode()) {
 			return 'AccessProxy [' . ($this->property !== null ? TypeUtils::prettyReflPropName($this->property) 
-					: TypeUtils::prettyPropName('<unknown class>', $this->propertyName) . ']');
+					: TypeUtils::prettyPropName('<unknown class>', $this->propertyName)) . ']';
 		}
 		
 		$strs = array();
