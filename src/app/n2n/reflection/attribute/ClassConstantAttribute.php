@@ -2,13 +2,19 @@
 
 namespace n2n\reflection\attribute;
 
+use n2n\util\type\ArgUtils;
+
 /**
  * Describer for { @link \Attribute Attribute } on method.
  */
 class ClassConstantAttribute extends AttributeAdapter {
 	private \ReflectionClassConstant $constant;
+	private int $line;
 
-	private function __construct(\ReflectionAttribute $reflectionAttribute, \ReflectionClassConstant $constant, mixed $instance) {
+	private function __construct(?\ReflectionAttribute $reflectionAttribute, \ReflectionClassConstant $constant,
+			mixed $instance) {
+		ArgUtils::assertTrue($reflectionAttribute !== null || $instance !== null);
+
 		$this->attribute = $reflectionAttribute;
 		$this->constant = $constant;
 		$this->instance = $instance;
@@ -34,6 +40,7 @@ class ClassConstantAttribute extends AttributeAdapter {
 			$attrName = get_class($this->instance);
 		}
 
-		return AttributeUtils::extractClassConstantAttributeLine($attrName, $this->constant);
+		return $this->line
+				?? $this->line = AttributeUtils::extractClassConstantAttributeLine($attrName, $this->constant);
 	}
 }

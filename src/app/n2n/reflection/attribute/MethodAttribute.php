@@ -2,13 +2,18 @@
 
 namespace n2n\reflection\attribute;
 
+use n2n\util\type\ArgUtils;
+
 /**
  * Describer for { @link \Attribute Attribute } on method.
  */
 class MethodAttribute extends AttributeAdapter {
 	private \ReflectionMethod $method;
+	private int $line;
 
 	private function __construct(\ReflectionAttribute|null $reflectionAttribute, \ReflectionMethod $method, mixed $instance) {
+		ArgUtils::assertTrue($reflectionAttribute !== null || $instance !== null);
+
 		$this->attribute = $reflectionAttribute;
 		$this->method = $method;
 		$this->instance = $instance;
@@ -38,6 +43,6 @@ class MethodAttribute extends AttributeAdapter {
 			$attrName = get_class($this->instance);
 		}
 
-		return AttributeUtils::extractMethodAttributeLine($attrName, $this->method);
+		return $this->line ?? $this->line = AttributeUtils::extractMethodAttributeLine($attrName, $this->method);
 	}
 }

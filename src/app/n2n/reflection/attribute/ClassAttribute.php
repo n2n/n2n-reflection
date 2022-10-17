@@ -3,14 +3,18 @@
 namespace n2n\reflection\attribute;
 
 use n2n\util\ex\IllegalStateException;
+use n2n\util\type\ArgUtils;
 
 /**
  * Describer for { @link \Attribute Attribute } on method.
  */
 class ClassAttribute extends AttributeAdapter {
 	private \ReflectionClass $class;
+	private int $line;
 
 	private function __construct(\ReflectionAttribute|null $reflectionAttribute, \ReflectionClass $class, $instance) {
+		ArgUtils::assertTrue($reflectionAttribute !== null || $instance !== null);
+
 		$this->attribute = $reflectionAttribute;
 		$this->class = $class;
 		$this->instance = $instance;
@@ -36,6 +40,6 @@ class ClassAttribute extends AttributeAdapter {
 			$attrName = get_class($this->instance);
 		}
 
-		return AttributeUtils::extractClassAttributeLine($attrName, $this->class);
+		return $this->line ?? $this->line = AttributeUtils::extractClassAttributeLine($attrName, $this->class);
 	}
 }

@@ -22,10 +22,14 @@ class AttributeUtilsTest extends TestCase {
 
 		$property = $class->getProperty('testProp');
 		$attrLine = AttributeUtils::extractPropertyAttributeLine(AttrC::class, $property);
-		$this->assertEquals(10, $attrLine);
+		$this->assertEquals(12, $attrLine);
 
 		$method = $class->getMethod('testMethod');
 		$attrLine = AttributeUtils::extractMethodAttributeLine(AttrA::class, $method);
-		$this->assertEquals(13, $attrLine);
+		$this->assertEquals(14, $attrLine);
+
+		$method = $class->getMethod('testMethod2');
+		$attrLine = AttributeUtils::extractMethodAttributeLine(AttrA::class, $method);
+		$this->assertEquals(19, $attrLine);
 	}
 }
