@@ -86,6 +86,18 @@ class PropertiesAnalyzer {
 		return $accessProxies;
 	}
 	// @todo private properties in super class cause exception, wait for persistance api to solve
+
+	/**
+	 * @param $propertyName
+	 * @param $settingRequired
+	 * @param $gettingRequired
+	 * @param $required
+	 * @return PropertyAccessProxy|null
+	 * @throws InaccessiblePropertyException
+	 * @throws InvalidPropertyAccessMethodException
+	 * @throws UnknownPropertyException
+	 * @throws \ReflectionException
+	 */
 	public function analyzeProperty($propertyName, $settingRequired = true, $gettingRequired = true, $required = true) {
 		$property = null;
 		if ($this->class->hasProperty($propertyName)) {

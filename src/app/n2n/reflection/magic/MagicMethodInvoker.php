@@ -59,6 +59,11 @@ class MagicMethodInvoker {
 	public function setMethod(\ReflectionFunctionAbstract $method = null) {
 		$this->method = $method;
 	}
+
+	function setClosure(\Closure $closure) {
+		$this->method = new \ReflectionFunction($closure);
+	}
+
 	/**
 	 * @return \ReflectionFunctionAbstract
 	 */

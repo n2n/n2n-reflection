@@ -5,8 +5,10 @@ namespace n2n\reflection\property;
 use n2n\util\type\TypeConstraint;
 use n2n\util\ex\UnsupportedOperationException;
 use n2n\util\type\ValueIncompatibleWithConstraintsException;
+use ReflectionMethod;
+use Throwable;
 
-class RestrictedAccessProxy implements AccessProxy {
+class RestrictedAccessProxy implements PropertyAccessProxy {
 
 	function __construct(private PropertyAccessProxy $propertyAccessProxy,
 			private ?TypeConstraint $getterConstraint = null, private ?TypeConstraint $setterConstraint = null) {
@@ -16,7 +18,7 @@ class RestrictedAccessProxy implements AccessProxy {
 		return $this->propertyAccessProxy->getPropertyName();
 	}
 
-	function getProperty() {
+	function getProperty(): ?\ReflectionProperty {
 		return $this->propertyAccessProxy->getProperty();
 	}
 
@@ -82,7 +84,23 @@ class RestrictedAccessProxy implements AccessProxy {
 		return $this->propertyAccessProxy->__toString();
 	}
 
-	function createRestricted(TypeConstraint $getterConstraint = null, TypeConstraint $setterConstraint = null): AccessProxy {
+	function createRestricted(TypeConstraint $getterConstraint = null, TypeConstraint $setterConstraint = null): PropertyAccessProxy {
 		throw new UnsupportedOperationException();
+	}
+
+	function getSetterMethod(): ?ReflectionMethod {
+		return $this->propertyAccessProxy->getSetterMethod();
+	}
+
+	function getGetterMethod(): ?ReflectionMethod {
+		return $this->propertyAccessProxy->getGetterMethod();
+	}
+
+	function createPassedValueException(Throwable $previous): PropertyValueTypeMissmatchException {
+		return $this->propertyAccessProxy->createPassedValueException($previous);
+	}
+
+	public function createReturnedValueException(Throwable $previous): PropertyValueTypeMissmatchException {
+		return $this->propertyAccessProxy->createReturnedValueException($previous);
 	}
 }

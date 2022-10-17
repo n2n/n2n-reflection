@@ -25,6 +25,7 @@ use n2n\core\TypeLoader;
 use n2n\util\io\ob\OutputBuffer;
 use n2n\reflection\annotation\Annotation;
 use n2n\core\TypeNotFoundException;
+use n2n\reflection\attribute\Attribute;
 
 class ReflectionUtils {
 	
@@ -249,14 +250,21 @@ class ReflectionUtils {
 			$lineNo = $reflectionComponent->getStartLine();
 			return;
 		}
-		
-		if ($reflectionComponent instanceof Annotation) { 
+
+		if ($reflectionComponent instanceof Annotation) {
 			$filePath = $reflectionComponent->getFileName();
 			$lineNo = $reflectionComponent->getLine();
 			return;
 		}
+
+		if ($reflectionComponent instanceof Attribute) {
+			$filePath = $reflectionComponent->getFile();
+			$lineNo = $reflectionComponent->getLine();
+			return;
+		}
 			
-		throw new \InvalidArgumentException('Unsupported reflection compontent type.');
+		throw new \InvalidArgumentException('Unsupported reflection compontent type: '
+				. get_class($reflectionComponent));
  	}
  	
 	public static function getLastTracePoint() {
