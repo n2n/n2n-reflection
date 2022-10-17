@@ -194,10 +194,14 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 		}
 	}
 
+	/**
+	 * @throws PropertyValueTypeMissmatchException
+	 * @throws PropertyAccessException
+	 */
 	public function setValue(object $object, mixed $value, bool $validate = true): void {
-		if (isset($this->constraint) && $validate) {
+		if ($validate) {
 			try {
-				$value = $this->constraint->validate($value);
+				$value = ($this->constraint ?? $this->getSetterConstraint())->validate($value);
 			} catch (ValueIncompatibleWithConstraintsException $e) {
 				throw $this->createPassedValueException($e);
 			}
