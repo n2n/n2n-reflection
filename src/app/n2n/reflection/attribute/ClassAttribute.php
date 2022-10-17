@@ -2,6 +2,8 @@
 
 namespace n2n\reflection\attribute;
 
+use n2n\util\ex\IllegalStateException;
+
 /**
  * Describer for { @link \Attribute Attribute } on method.
  */
@@ -27,7 +29,13 @@ class ClassAttribute extends AttributeAdapter {
 	}
 
 	public function getLine(): int {
-		if ($this->attribute === null) return -1;
-		return AttributeUtils::extractClassAttributeLine($this->attribute, $this->class);
+		$attrName = null;
+		if ($this->attribute !== null) {
+			$attrName = $this->attribute->getName();
+		} else {
+			$attrName = get_class($this->instance);
+		}
+
+		return AttributeUtils::extractClassAttributeLine($attrName, $this->class);
 	}
 }

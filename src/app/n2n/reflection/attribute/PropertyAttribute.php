@@ -27,8 +27,14 @@ class PropertyAttribute extends AttributeAdapter {
 	}
 
 	public function getLine(): int {
-		if ($this->attribute === null) return -1;
-		return AttributeUtils::extractPropertyAttributeLine($this->attribute, $this->property);
+		$attrName = null;
+		if ($this->attribute !== null) {
+			$attrName = $this->attribute->getName();
+		} else {
+			$attrName = get_class($this->instance);
+		}
+
+		return AttributeUtils::extractPropertyAttributeLine($attrName, $this->property);
 	}
 
 	public function getProperty(): \ReflectionProperty {
