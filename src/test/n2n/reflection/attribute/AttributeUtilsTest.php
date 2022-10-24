@@ -3,7 +3,6 @@
 namespace n2n\reflection\attribute;
 
 use PHPUnit\Framework\TestCase;
-use n2n\reflection\ReflectionContext;
 use n2n\reflection\attribute\mock\ExtractClassLineMock;
 use n2n\reflection\attribute\mock\AttrA;
 use n2n\reflection\attribute\mock\AttrB;

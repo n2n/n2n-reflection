@@ -25,7 +25,7 @@ class AttributeUtils {
 
     public static function extractMethodAttributeLine(string $attributeName, \ReflectionMethod $method): int {
 		$fileName = $method->getDeclaringClass()->getFileName();
-		$reflectorMatchPattern = '/(private|protected|public) \s function \s ' . $method->getName() . '/x';
+		$reflectorMatchPattern = '/(private|protected|public)? \s function \s ' . $method->getName() . '/x';
 		return self::findAttributeDeclaration($fileName, $attributeName, $reflectorMatchPattern);
 	}
 
