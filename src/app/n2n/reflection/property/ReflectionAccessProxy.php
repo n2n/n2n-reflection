@@ -108,12 +108,12 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 			throw new ConstraintsConflictException('Constraints conflict for property ' 
 					. $this->property->getDeclaringClass()->getName() . '::$' 
 					. $this->property->getName() . '. Constraints ' . $constraint->__toString()
-					. ' are not compatible with ' . $this->baseConstraint->__toString());
+					. ' are not compatible with ' . $this->getBaseConstraint()->__toString());
 		} else {
 			throw new ConstraintsConflictException('Constraints conflict for setter-method ' 
 							. $this->setterMethod->getDeclaringClass()->getName() . '::' 
 							. $this->setterMethod->getName() . '(). Constraints ' . $constraint->__toString()
-							. ' are not compatible with ' . $this->baseConstraint->__toString(),
+							. ' are not compatible with ' . $this->getBaseConstraint()->__toString(),
 					0, null, $this->setterMethod);
 		}
 	}
