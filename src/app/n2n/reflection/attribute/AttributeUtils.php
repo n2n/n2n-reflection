@@ -19,7 +19,7 @@ class AttributeUtils {
 
 	public static function extractPropertyAttributeLine(string $attributeName, \ReflectionProperty $property): int {
 		$fileName = $property->getDeclaringClass()->getFileName();
-		$reflectorMatchPattern = '/(private|protected|public|var) \s \$' . $property->getName() . '/x';
+		$reflectorMatchPattern = '/(private|protected|public|var) .* \$' . $property->getName() . '/x';
 		return self::findAttributeDeclaration($fileName, $attributeName, $reflectorMatchPattern);
 	}
 
