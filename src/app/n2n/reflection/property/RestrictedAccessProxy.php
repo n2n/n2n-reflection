@@ -68,7 +68,7 @@ class RestrictedAccessProxy implements PropertyAccessProxy {
 		try {
 			return $this->getterConstraint->validate($value);
 		} catch (ValueIncompatibleWithConstraintsException $e) {
-			throw $this->propertyAccessProxy->createRestricted($e);
+			throw $this->propertyAccessProxy->createReturnedValueException($e);
 		}
 	}
 
