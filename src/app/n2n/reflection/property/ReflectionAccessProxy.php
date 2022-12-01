@@ -153,7 +153,7 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 
 		$type = $this->property->getType();
 
-		if ($type->allowsNull()) {
+		if ($type === null || $type->allowsNull()) {
 			return $this->getterConstraint = TypeConstraints::type($type);
 		}
 
