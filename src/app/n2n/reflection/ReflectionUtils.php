@@ -70,7 +70,7 @@ class ReflectionUtils {
 		if (class_exists(TypeLoader::class, false)) {
 			try {
 				return ReflectionUtils::createReflectionClass($type->getName());
-			} catch (TypeNotFoundException $e) {
+			} catch (\ReflectionException $e) {
 				$thrownE = $e;
 			}
 		} else {
@@ -105,15 +105,14 @@ class ReflectionUtils {
 	 * 
 	 * @param string $typeName
 	 * @return \ReflectionClass
-	 * @throws TypeNotFoundException
-	 * @deprecated works only if {@link n2n\core} module is present
+	 * @throws \ReflectionException
 	 */
 	public static function createReflectionClass(string $typeName): \ReflectionClass {
-		if (class_exists(TypeLoader::class, false)) {
-			TypeLoader::ensureTypeIsLoaded($typeName);
-		} else if (!class_exists($typeName)) {
-			throw new TypeNotFoundException('Type not found: ' . $typeName);
-		}
+//		if (class_exists(TypeLoader::class, false)) {
+//			TypeLoader::ensureTypeIsLoaded($typeName);
+//		} else if (!class_exists($typeName)) {
+//			throw new TypeNotFoundException('Type not found: ' . $typeName);
+//		}
 
 		return new \ReflectionClass($typeName);
 	}

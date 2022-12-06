@@ -149,7 +149,7 @@ class MagicMethodInvoker {
 			
 			try {
 				$parameterClass = ReflectionUtils::extractParameterClass($parameter);
-			} catch (TypeNotFoundException $e) {
+			} catch (\ReflectionException $e) {
 				throw new CanNotFillParameterException($parameter, $e->getMessage(), 0, $e->getPrevious());
 			}
 
