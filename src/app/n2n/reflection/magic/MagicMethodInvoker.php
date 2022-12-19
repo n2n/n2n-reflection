@@ -34,40 +34,30 @@ use n2n\util\type\TypeConstraint;
 use n2n\reflection\ReflectionErrorException;
 
 class MagicMethodInvoker {
-	private $magicContext;
-	private $module;
-	private $method;
+	private \ReflectionFunctionAbstract $method;
 	private $classParamObjects = array();
 	private $paramValues = array();
 	/**
 	 * @var \n2n\util\type\TypeConstraint|null
 	 */
 	private $returnTypeConstraint = null;
-	
-	/**
-	 * 
-	 * @param \ReflectionMethod $method
-	 * @param Module $module
-	 */
-	public function __construct(MagicContext $magicContext = null, Module $module = null) {
+
+	public function __construct(private ?MagicContext $magicContext = null) {
 		$this->magicContext = $magicContext;
-		$this->module = $module;
 	}
-	/**
-	 * @param \ReflectionFunctionAbstract $method
-	 */
-	public function setMethod(\ReflectionFunctionAbstract $method = null) {
+
+	public function setMethod(?\ReflectionFunctionAbstract $method): void {
 		$this->method = $method;
 	}
 
-	function setClosure(\Closure $closure) {
+	function setClosure(\Closure $closure): void {
 		$this->method = new \ReflectionFunction($closure);
 	}
 
 	/**
 	 * @return \ReflectionFunctionAbstract
 	 */
-	public function getMethod() {
+	public function getMethod(): \ReflectionFunctionAbstract {
 		return $this->method;
 	}
 // 	/**
@@ -83,16 +73,13 @@ class MagicMethodInvoker {
 // 		}
 // 		return $this->module;
 // 	}
-	
-	public function setModule(Module $module) {
-		$this->module = $module;
-	}
+
 	/**
 	 * 
 	 * @param string $name
 	 * @param string $value
 	 */
-	public function setParamValue($name, $value) {
+	public function setParamValue($name, $value): void {
 		$this->paramValues[$name] = $value;
 	}
 	/**
@@ -100,7 +87,7 @@ class MagicMethodInvoker {
 	 * @param string $name
 	 * @param object $obj
 	 */
-	public function setClassParamObject($className, $obj) {
+	public function setClassParamObject($className, $obj): void {
 		$this->classParamObjects[$className] = $obj;
 	}
 	
@@ -115,14 +102,11 @@ class MagicMethodInvoker {
 	/**
 	 * @param TypeConstraint $typeConstraint
 	 */
-	public function setReturnTypeConstraint(?TypeConstraint $typeConstraint) {
+	public function setReturnTypeConstraint(?TypeConstraint $typeConstraint): void {
 		$this->returnTypeConstraint = $typeConstraint;
 	}
-	
-	/**
-	 * @return \n2n\util\type\TypeConstraint|null
-	 */
-	public function getReturnTypeConstraint() {
+
+	public function getReturnTypeConstraint(): ?TypeConstraint {
 		return $this->returnTypeConstraint;
 	}
 	
