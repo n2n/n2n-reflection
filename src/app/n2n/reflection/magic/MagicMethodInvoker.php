@@ -144,18 +144,11 @@ class MagicMethodInvoker {
 			}
 			
 			$previousE = null;
-			if ($this->magicContext !== null) {
-				try {
-					$args[] = $this->magicContext->lookupParameterValue($parameter);
-					continue;
-				} catch (MagicObjectUnavailableException $e) {
-					$previousE = $e;
-				}
-			}
-			
-			if ($parameter->isDefaultValueAvailable()) {
-				$args[] = $parameter->getDefaultValue();
+			try {
+				$args[] = $this->lookupParameterValue($parameter);
 				continue;
+			} catch (MagicObjectUnavailableException $e) {
+				$previousE = $e;
 			}
 			
 			$eMsg = 'Can not fill parameter \'' . $parameter->getName() . '\' of magic method '
@@ -174,6 +167,33 @@ class MagicMethodInvoker {
 		
 		return $args;
 	}
+
+	private function lookupParameterValue(\ReflectionParameter $parameter) {
+		$parameterClass = ReflectionUtils::extractParameterClass($parameter);
+
+		if ($this->magicContext !== null || $parameterClass !== null) {
+			$fallbackAvailable = $parameter->isDefaultValueAvailable() || $parameter->allowsNull();
+			return $this->magicContext->lookup($parameterClass, !$fallbackAvailable,
+					$this->determineNamespaceOfParameter($parameter));
+		}
+
+		if ($parameter->isDefaultValueAvailable()) {
+			return $parameter->getDefaultValue();
+		} else if ($parameter->allowsNull()) {
+			return null;
+		}
+
+		throw new \LogicException();
+	}
+
+	private function determineNamespaceOfParameter(\ReflectionParameter $parameter) {
+		if (null !== ($class = $parameter->getDeclaringClass())) {
+			return $class->getNamespaceName();
+		}
+
+		return $parameter->getDeclaringFunction()->getNamespaceName();
+	}
+
 	/**
 	 * 
 	 * @param object $object
