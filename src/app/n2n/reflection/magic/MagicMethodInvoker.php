@@ -171,7 +171,7 @@ class MagicMethodInvoker {
 	private function lookupParameterValue(\ReflectionParameter $parameter) {
 		$parameterClass = ReflectionUtils::extractParameterClass($parameter);
 
-		if ($this->magicContext !== null || $parameterClass !== null) {
+		if ($this->magicContext !== null && $parameterClass !== null) {
 			$fallbackAvailable = $parameter->isDefaultValueAvailable() || $parameter->allowsNull();
 			return $this->magicContext->lookup($parameterClass, !$fallbackAvailable,
 					$this->determineNamespaceOfParameter($parameter));
