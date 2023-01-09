@@ -96,7 +96,7 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	 * @return \n2n\util\type\TypeConstraint
 	 */
 	public function getConstraint(): TypeConstraint {
-		return $this->constraint ?? $this->getSetterConstraint();
+		return $this->constraint ?? $this->getBaseConstraint();
 	}
 
 	public function setConstraint(TypeConstraint $constraint) {
