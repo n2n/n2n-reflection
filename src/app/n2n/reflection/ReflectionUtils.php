@@ -28,8 +28,10 @@ use n2n\core\TypeNotFoundException;
 use n2n\reflection\attribute\Attribute;
 
 class ReflectionUtils {
-	
-	public static function captureVarDump($expression, $maxChars = self::COMMON_MAX_CHARS) {
+
+	const COMMON_MAX_CHARS = 255;
+
+	public static function captureVarDump($expression, $maxChars = self::COMMON_MAX_CHARS): string {
 		$outputBuffer = new OutputBuffer();
 		$outputBuffer->start();
 		var_dump($expression);
@@ -40,7 +42,10 @@ class ReflectionUtils {
 		}
 		return $outputBuffer->get();
 	}
-	
+
+	/**
+	 * @throws \ReflectionException
+	 */
 	public static function getNamespace($obj): string {
 		if (is_object($obj)) {
 			return (new \ReflectionClass($obj))->getNamespaceName();
@@ -85,8 +90,21 @@ class ReflectionUtils {
 		throw new ReflectionErrorException('Unkown type defined for parameter: ' . $parameter->getName(),
 				$declaringFunction->getFileName(), $declaringFunction->getStartLine(), null, null, $e);
 	}
+
+
+	public static function hasMethodInHierarchy(\ReflectionClass $class, $methodName): bool {
+		do {
+			if ($class->hasMethod($methodName)) {
+				return true;
+			}
+
+			$class = $class->getParentClass();
+		} while (is_object($class));
+
+		return false;
+	}
 	
-	public static function extractMethodHierarchy(\ReflectionClass $class, $methodName) {
+	public static function extractMethodHierarchy(\ReflectionClass $class, $methodName): array {
 		$methods = array();
 		
 		do {

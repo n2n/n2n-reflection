@@ -34,18 +34,26 @@ class MagicUtils {
 	 * @param object $object
 	 * @param MagicContext $magicContext
 	 */
-	public static function init(object $object, MagicContext $magicContext = null) {
+	public static function init(object $object, MagicContext $magicContext = null): void {
 		self::callMethodHierarchy(new \ReflectionClass($object), $object, 
 				self::MAGIC_INIT_METHOD, false, $magicContext);
+	}
+
+	public static function isInitable(object $object): bool {
+		return ReflectionUtils::hasMethodInHierarchy(new \ReflectionClass($object),self::MAGIC_INIT_METHOD);
 	}
 
 	/**
 	 * @param object $object
 	 * @param MagicContext $magicContext
 	 */
-	public static function terminate(object $object) {
+	public static function terminate(object $object): void {
 		self::callMethodHierarchy(new \ReflectionClass($object), $object,
 				self::MAGIC_TERMINATE_METHOD, false);
+	}
+
+	public static function isTerminatable(object $object): bool {
+		return ReflectionUtils::hasMethodInHierarchy(new \ReflectionClass($object),self::MAGIC_TERMINATE_METHOD);
 	}
 
 	/**
@@ -102,15 +110,16 @@ class MagicUtils {
 	// 		$this->checkReturnValue($method, $value, $returnConstraints);
 	// 		return $value;
 	// 	}
-	
+
 	/**
 	 *
 	 * @param \Closure $closure
-	 * @param MagicContext $magicContext
-	 * @throws ReflectionErrorException
+	 * @param MagicContext|null $magicContext
+	 * @return mixed|null
+	 * @throws \ReflectionException
 	 */
 	public function callMagicClosure(\Closure $closure, MagicContext $magicContext = null) {
-		$magicMethodInvoker = new MagicMethodInvoker($this);
+		$magicMethodInvoker = new MagicMethodInvoker($magicContext);
 		return $magicMethodInvoker->invoke(null, new \ReflectionFunction($closure));
 	}
 
