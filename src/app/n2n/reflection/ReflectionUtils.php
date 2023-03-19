@@ -137,7 +137,7 @@ class ReflectionUtils {
 	/**
 	 * @param \ReflectionClass $class
 	 * @throws ObjectCreationFailedException
-	 * @return object
+	 * @return mixed
 	 */
 	public static function createObject(\ReflectionClass $class, bool $callConstructor = true) {
 		$args = array();
