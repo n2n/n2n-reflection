@@ -62,7 +62,7 @@ class MagicUtils {
 	 * @param object $object
 	 * @param string $methodName
 	 * @param bool $oneRequired
-	 * @param MagicContext $magicContext
+	 * @param MagicContext|null $magicContext
 	 * @throws ReflectionErrorException
 	 */
 	public static function callMethodHierarchy(\ReflectionClass $class, $object, string $methodName, 

@@ -28,10 +28,10 @@ use n2n\reflection\ReflectionUtils;
 use n2n\util\ex\IllegalStateException;
 use n2n\core\TypeNotFoundException;
 use n2n\util\magic\MagicContext;
-use n2n\util\magic\MagicObjectUnavailableException;
 use n2n\util\type\TypeUtils;
 use n2n\util\type\TypeConstraint;
 use n2n\reflection\ReflectionErrorException;
+use n2n\util\magic\MagicLookupFailedException;
 
 class MagicMethodInvoker {
 	private \ReflectionFunctionAbstract $method;
@@ -147,7 +147,7 @@ class MagicMethodInvoker {
 			try {
 				$args[] = $this->lookupParameterValue($parameter);
 				continue;
-			} catch (MagicObjectUnavailableException $e) {
+			} catch (MagicLookupFailedException $e) {
 				$previousE = $e;
 			}
 			
@@ -168,6 +168,12 @@ class MagicMethodInvoker {
 		return $args;
 	}
 
+	/**
+	 * @param \ReflectionParameter $parameter
+	 * @return mixed
+	 * @throws ReflectionErrorException
+	 * @throws MagicLookupFailedException
+	 */
 	private function lookupParameterValue(\ReflectionParameter $parameter) {
 		$parameterClass = ReflectionUtils::extractParameterClass($parameter);
 
