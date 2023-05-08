@@ -203,9 +203,13 @@ class MagicMethodInvoker {
 	/**
 	 * 
 	 * @param object $object
-	 * @return mixed|null
+	 * @return mixed
 	 */	
-	public function invoke($object = null, \ReflectionFunctionAbstract $method = null, array $firstArgs = []) {
+	public function invoke($object = null, \ReflectionFunctionAbstract|\Closure $method = null, array $firstArgs = []): mixed {
+		if ($method instanceof \Closure) {
+			$method = new \ReflectionFunction($method);
+		}
+
 		if ($method === null) {
 			$method = $this->method;
 		}
@@ -234,7 +238,7 @@ class MagicMethodInvoker {
 	}
 	
 	/**
-	 * @param \ReflectionFunctionAbstract
+	 * @param \ReflectionFunctionAbstract $method
 	 * @param mixed|null $value
 	 */
 	private function valReturn($method, $value) {
