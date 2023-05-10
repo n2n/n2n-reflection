@@ -6,6 +6,7 @@ use n2n\reflection\attribute\legacy\LegacyConverter;
 use n2n\reflection\ReflectionContext;
 use n2n\util\ex\UnsupportedOperationException;
 use n2n\util\type\ArgUtils;
+use ReflectionClass;
 
 class AttributeSet {
     private const TYPE_CLASS = 'cl';
@@ -29,9 +30,9 @@ class AttributeSet {
 	private LegacyConverter $legacyConverter;
 
 	/**
-	 * @param \ReflectionClass $class
+	 * @param ReflectionClass $class
 	 */
-	public function __construct(private \ReflectionClass $class) {
+	public function __construct(private ReflectionClass $class) {
 		$this->legacyConverter = new LegacyConverter(ReflectionContext::getAnnotationSet($this->class));
 	}
 
@@ -56,6 +57,7 @@ class AttributeSet {
 
 	/**
 	 * @param string $attributeName
+	 * @return ClassAttribute|null
 	 */
 	public function getClassAttribute(string $attributeName): ClassAttribute|null {
         return $this->loadAttributeFromReflector(self::TYPE_CLASS, $attributeName, $this->class);
@@ -425,7 +427,7 @@ class AttributeSet {
      */
 	private function createAttribute(string $type, \ReflectionAttribute $attribute, \Reflector $reflector) {
 		if ($type === self::TYPE_CLASS) {
-			ArgUtils::assertTrue($reflector instanceof \ReflectionClass);
+			ArgUtils::assertTrue($reflector instanceof ReflectionClass);
 			return ClassAttribute::fromAttribute($attribute, $reflector);
 		}
 
