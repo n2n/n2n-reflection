@@ -21,6 +21,6 @@
  */
 namespace n2n\reflection;
 
-class ReflectionException extends \ReflectionException {
+class ReflectionException extends \RuntimeException {
 	
 }
