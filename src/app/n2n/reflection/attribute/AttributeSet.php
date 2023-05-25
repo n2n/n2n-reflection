@@ -5,8 +5,8 @@ namespace n2n\reflection\attribute;
 use n2n\reflection\attribute\legacy\LegacyConverter;
 use n2n\reflection\ReflectionContext;
 use n2n\util\ex\UnsupportedOperationException;
-use n2n\util\type\ArgUtils;
-use ReflectionClass;
+use n2n\reflection\ReflectionRuntimeException;
+use JetBrains\PhpStorm\Pure;
 
 class AttributeSet {
     private const TYPE_CLASS = 'cl';
@@ -30,9 +30,9 @@ class AttributeSet {
 	private LegacyConverter $legacyConverter;
 
 	/**
-	 * @param ReflectionClass $class
+	 * @param \ReflectionClass $class
 	 */
-	public function __construct(private ReflectionClass $class) {
+	public function __construct(private \ReflectionClass $class) {
 		$this->legacyConverter = new LegacyConverter(ReflectionContext::getAnnotationSet($this->class));
 	}
 
@@ -60,7 +60,12 @@ class AttributeSet {
 	 * @return ClassAttribute|null
 	 */
 	public function getClassAttribute(string $attributeName): ClassAttribute|null {
-        return $this->loadAttributeFromReflector(self::TYPE_CLASS, $attributeName, $this->class);
+        $classAttribute = $this->loadAttributeFromReflector(self::TYPE_CLASS, $attributeName, $this->class);
+
+		if ($classAttribute === null) return null;
+		assert($classAttribute instanceof ClassAttribute);
+
+		return $classAttribute;
 	}
 
 	/**
@@ -85,7 +90,7 @@ class AttributeSet {
 	/**
 	 * @param string $propertyName
 	 * @param string $attributeName
-     * @throws \ReflectionException
+     * @throws ReflectionRuntimeException
 	 * @return boolean
 	 */
 	public function hasPropertyAttribute(string $propertyName, string $attributeName): bool {
@@ -95,12 +100,17 @@ class AttributeSet {
 	/**
 	 * @param string $propertyName
 	 * @param string $attributeName
-     * @throws \ReflectionException
+     * @throws ReflectionRuntimeException
      * @return PropertyAttribute|null
 	 */
 	public function getPropertyAttribute(string $propertyName, string $attributeName): PropertyAttribute|null {
-		return $this->loadAttributeFromReflector(self::TYPE_PROPERTY, $attributeName,
-				$this->class->getProperty($propertyName));
+		$property = ReflectionRuntimeException::try(fn() => $this->class->getProperty($propertyName));
+		$propertyAttribute = $this->loadAttributeFromReflector(self::TYPE_PROPERTY, $attributeName, $property);
+
+		if ($propertyAttribute === null) return null;
+		assert($propertyAttribute instanceof PropertyAttribute);
+
+		return $propertyAttribute;
 	}
 	/**
 	 * @param string $name
@@ -144,8 +154,13 @@ class AttributeSet {
      * @return ClassConstantAttribute|null
      */
     public function getClassConstantAttribute(string $constantName, string $attributeName): ClassConstantAttribute|null {
-        return $this->loadAttributeFromReflector(self::TYPE_CONSTANT, $attributeName,
+        $classConstantAttribute = $this->loadAttributeFromReflector(self::TYPE_CONSTANT, $attributeName,
             $this->class->getReflectionConstant($constantName));
+
+		if ($classConstantAttribute === null) return null;
+		assert($classConstantAttribute instanceof ClassConstantAttribute);
+
+		return $classConstantAttribute;
     }
     /**
      * @param string $name
@@ -177,7 +192,7 @@ class AttributeSet {
 	/**
 	 * @param string $methodName
 	 * @param string $attributeName
-     * @throws \ReflectionException
+     * @throws ReflectionRuntimeException
 	 * @return boolean
 	 */
 	public function hasMethodAttribute(string $methodName, string $attributeName): bool {
@@ -187,11 +202,17 @@ class AttributeSet {
 	/**
 	 * @param string $methodName
 	 * @param string $attributeName
-     * @throws \ReflectionException
+     * @throws ReflectionRuntimeException
      * @return MethodAttribute|null
 	 */
 	public function getMethodAttribute(string $methodName, string $attributeName): MethodAttribute|null {
-		return $this->loadAttributeFromReflector(self::TYPE_METHOD, $attributeName, $this->class->getMethod($methodName));
+		$method = ReflectionRuntimeException::try(fn() => $this->class->getMethod($methodName));
+		$methodAttribute = $this->loadAttributeFromReflector(self::TYPE_METHOD, $attributeName, $method);
+
+		if ($methodAttribute === null) return null;
+		assert($methodAttribute instanceof MethodAttribute);
+
+		return $methodAttribute;
 	}
 
 	/**
@@ -254,6 +275,11 @@ class AttributeSet {
 		$reflectors = $this->getReflectorsByType($type);
 		foreach ($reflectors as $reflector) {
             $reflectorName = $reflector->getName();
+
+			assert($reflector instanceof \ReflectionClassConstant
+				|| $reflector instanceof \ReflectionProperty
+				|| $reflector instanceof \ReflectionMethod);
+
 			foreach ($reflector->getAttributes($attributeName) as $attribute) {
 				$this->attributes[$type][$attributeName][$reflectorName]
                         = $this->createAttribute($type, $attribute, $reflector);
@@ -266,15 +292,21 @@ class AttributeSet {
 		return $this->attributes[$type][$attributeName];
 	}
 
-	private function loadType(string $type): array {
+	private function loadType(string $type): void {
         if ($this->isLoaded($type)) {
-            return $this->retrieveAttributes($type);
+            return;
         }
 
         $reflectors = $this->getReflectorsByType($type);
 
 		foreach ($reflectors as $reflector) {
 			$reflectorName = $reflector->getName();
+
+			assert($reflector instanceof \ReflectionClass
+					|| $reflector instanceof \ReflectionClassConstant
+					|| $reflector instanceof \ReflectionProperty
+					|| $reflector instanceof \ReflectionMethod);
+
 			foreach ($reflector->getAttributes() as $attribute) {
 				$attributeName = $attribute->getName();
 				if (!isset($this->attributes[$type][$attributeName])) {
@@ -287,14 +319,13 @@ class AttributeSet {
 
 		$this->loadLegacyType($type);
 		$this->setLoaded($type);
-
-        return $this->attributes[$type];
 	}
 
     /**
      * @param string $type
      * @return \Reflector[]
      */
+	#[Pure]
 	private function getReflectorsByType(string $type) {
 		$reflectors = [];
 
@@ -346,7 +377,7 @@ class AttributeSet {
 		$this->attributes[$type][$attributeName] = array_merge($this->attributes[$type][$attributeName], $loadedLegacyAttrs);
 	}
 
-	private function loadLegacyAttribute(string $type, string $attributeName, string $reflectorName): Attribute|null {
+	private function loadLegacyAttribute(string $type, string $attributeName, string $reflectorName): void {
         $foundAttribute = null;
         if ($type === self::TYPE_CLASS) {
 			$foundAttribute = $this->legacyConverter->getClassAttribute($attributeName);
@@ -364,7 +395,6 @@ class AttributeSet {
             $this->attributes[$type][$attributeName][$reflectorName] = $foundAttribute;
         }
 
-        return $foundAttribute;
 	}
 
 	/**
@@ -383,6 +413,11 @@ class AttributeSet {
 			$this->attributes[$type][$attributeName] = array();
 		}
 
+		assert($reflector instanceof \ReflectionClass
+				|| $reflector instanceof \ReflectionClassConstant
+				|| $reflector instanceof \ReflectionProperty
+				|| $reflector instanceof \ReflectionMethod);
+
 		foreach ($reflector->getAttributes($attributeName) as $attribute) {
 			$this->attributes[$type][$attributeName][$reflectorName] = $this->createAttribute($type, $attribute, $reflector);
 		}
@@ -400,6 +435,7 @@ class AttributeSet {
      * @param string|null $reflectorName
      * @return bool
      */
+	#[Pure]
 	private function isLoaded(string $type, string $attributeName = null, string $reflectorName = null) {
 		return isset($this->loadedKeys[$this->loadedKey($type)])
                 || isset($this->loadedKeys[$this->loadedKey($type, $attributeName)])
@@ -427,22 +463,22 @@ class AttributeSet {
      */
 	private function createAttribute(string $type, \ReflectionAttribute $attribute, \Reflector $reflector) {
 		if ($type === self::TYPE_CLASS) {
-			ArgUtils::assertTrue($reflector instanceof ReflectionClass);
+			assert($reflector instanceof \ReflectionClass);
 			return ClassAttribute::fromAttribute($attribute, $reflector);
 		}
 
 		if ($type === self::TYPE_PROPERTY) {
-			ArgUtils::assertTrue($reflector instanceof \ReflectionProperty);
+			assert($reflector instanceof \ReflectionProperty);
 			return PropertyAttribute::fromAttribute($attribute, $reflector);
 		}
 
 		if ($type === self::TYPE_METHOD) {
-			ArgUtils::assertTrue($reflector instanceof \ReflectionMethod);
+			assert($reflector instanceof \ReflectionMethod);
 			return MethodAttribute::fromAttribute($attribute, $reflector);
 		}
 
         if ($type === self::TYPE_CONSTANT) {
-            ArgUtils::assertTrue($reflector instanceof \ReflectionClassConstant);
+            assert($reflector instanceof \ReflectionClassConstant);
             return ClassConstantAttribute::fromAttribute($attribute, $reflector);
         }
 
@@ -450,7 +486,7 @@ class AttributeSet {
 	}
 
     /**
-     * @param $type
+     * @param string $type
      * @param string|null $attributeName
      * @param string|null $reflectorName
      * @return string
