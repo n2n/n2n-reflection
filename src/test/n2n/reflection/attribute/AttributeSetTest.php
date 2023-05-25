@@ -7,6 +7,7 @@ use n2n\reflection\attribute\mock\AttrC;
 use n2n\reflection\attribute\mock\MockClass;
 use n2n\reflection\attribute\mock\PreSuffix;
 use PHPUnit\Framework\TestCase;
+use n2n\reflection\ReflectionRuntimeException;
 
 class AttributeSetTest extends TestCase {
     private $attributeSet;
@@ -205,5 +206,85 @@ class AttributeSetTest extends TestCase {
 		$instance = $attr->getInstance();
 		$this->assertEquals($instance->getPrefix(), 'key[');
 		$this->assertEquals($instance->getSuffix(), ']');
+	}
+
+	public function testReadNonExistentClassAttribute() {
+		$attribute = $this->attributeSet->getClassAttribute('NonExistentClass');
+		$this->assertNull($attribute);
+	}
+
+	public function testReadNonExistentClassConstantAttribute() {
+		$attribute = $this->attributeSet->getClassConstantAttribute('TEST', 'NonExistentClass');
+		$this->assertNull($attribute);
+	}
+
+	public function testReadNonExistentPropertyAttribute() {
+		$attribute = $this->attributeSet->getPropertyAttribute('publicProperty', 'NonExistentClass');
+		$this->assertNull($attribute);
+	}
+
+	public function testReadNonExistentMethodAttribute() {
+		$attribute = $this->attributeSet->getMethodAttribute('publicMethod', 'NonExistentClass');
+		$this->assertNull($attribute);
+	}
+
+	public function testHasNonExistentClassAttribute() {
+		$this->assertFalse($this->attributeSet->hasClassAttribute('NonExistentClass'));
+	}
+
+	public function testHasNonExistentClassConstantAttribute() {
+		$this->assertFalse($this->attributeSet->hasClassConstantAttribute('TEST', 'NonExistentClass'));
+	}
+
+	public function testHasNonExistentPropertyAttribute() {
+		$this->assertFalse($this->attributeSet->hasPropertyAttribute('publicProperty', 'NonExistentClass'));
+	}
+
+	public function testHasNonExistentMethodAttribute() {
+		$this->assertFalse($this->attributeSet->hasMethodAttribute('publicMethod', 'NonExistentClass'));
+	}
+
+	public function testGetClassConstantAttributesByNonExistentName() {
+		$this->assertEmpty($this->attributeSet->getClassConstantAttributesByName('NonExistentClass'));
+	}
+
+	public function testGetPropertyAttributesByNonExistentName() {
+		$this->assertEmpty($this->attributeSet->getPropertyAttributesByName('NonExistentClass'));
+	}
+
+	public function testGetMethodAttributesByNonExistentName() {
+		$this->assertEmpty($this->attributeSet->getMethodAttributesByName('NonExistentClass'));
+	}
+
+	public function testContainsNonExistentClassConstantAttributeName() {
+		$this->assertFalse($this->attributeSet->containsClassConstantAttributeName('NonExistentClass'));
+	}
+
+	public function testContainsNonExistentPropertyAttributeName() {
+		$this->assertFalse($this->attributeSet->containsPropertyAttributeName('NonExistentClass'));
+	}
+
+	public function testContainsNonExistentMethodAttributeName() {
+		$this->assertFalse($this->attributeSet->containsMethodAttributeName('NonExistentClass'));
+	}
+
+	public function testGetPropertyAttributeWithNonExistentProperty() {
+		$this->expectException(ReflectionRuntimeException::class);
+		$this->attributeSet->getPropertyAttribute('nonExistentProperty', AttrA::class);
+	}
+
+	public function testHasPropertyAttributeWithNonExistentProperty() {
+		$this->expectException(ReflectionRuntimeException::class);
+		$this->assertFalse($this->attributeSet->hasPropertyAttribute('nonExistentProperty', AttrA::class));
+	}
+
+	public function testGetMethodAttributeWithNonExistentMethod() {
+		$this->expectException(ReflectionRuntimeException::class);
+		$this->attributeSet->getMethodAttribute('nonExistentMethod', AttrA::class);
+	}
+
+	public function testHasMethodAttributeWithNonExistentMethod() {
+		$this->expectException(ReflectionRuntimeException::class);
+		$this->attributeSet->hasMethodAttribute('nonExistentMethod', AttrA::class);
 	}
 }
