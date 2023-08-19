@@ -21,8 +21,6 @@
  */
 namespace n2n\reflection\property;
 
-use n2n\reflection\ReflectionException;
-
-class UnknownPropertyException extends ReflectionException {
+class UnknownPropertyException extends \ReflectionException {
 	
 }

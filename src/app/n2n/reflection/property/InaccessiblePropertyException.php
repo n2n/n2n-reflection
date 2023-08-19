@@ -21,9 +21,7 @@
  */
 namespace n2n\reflection\property;
 
-use n2n\reflection\ReflectionException;
-
-class InaccessiblePropertyException extends ReflectionException {
+class InaccessiblePropertyException extends \ReflectionException {
 	private $property;
 	
 	public function __construct(\ReflectionProperty $property = null, string $message = null, int $code = null,

@@ -21,9 +21,7 @@
  */
 namespace n2n\reflection\property;
 
-use n2n\reflection\ReflectionException;
-
-class InvalidPropertyAccessMethodException extends ReflectionException {
+class InvalidPropertyAccessMethodException extends \ReflectionException {
 	private $method;
 	
 	public function __construct(\ReflectionMethod $method, $message, $code = null, \Exception $previous = null) {

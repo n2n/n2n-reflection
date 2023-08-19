@@ -19,8 +19,8 @@
  * Bert Hofmänner.......: Idea, Frontend UI, Community Leader, Marketing
  * Thomas Günther.......: Developer, Hangar
  */
-namespace n2n\reflection;
+namespace n2n\reflection\property;
 
-class ReflectionException extends \RuntimeException {
+class PropertyValueTypeMismatchException extends PropertyAccessException {
 	
 }

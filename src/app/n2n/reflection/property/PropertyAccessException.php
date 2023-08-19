@@ -21,8 +21,9 @@
  */
 namespace n2n\reflection\property;
 
-use n2n\reflection\ReflectionException;
+/**
+ * Extends \ReflectionException for compatibility reasons. Will be changed to \Exception in the future.
+ */
+class PropertyAccessException extends \ReflectionException {
 
-class PropertyAccessException extends ReflectionException {
-	
 }

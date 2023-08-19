@@ -24,6 +24,7 @@ namespace n2n\reflection\property;
 use n2n\reflection\ReflectionUtils;
 use n2n\util\type\TypeUtils;
 use n2n\util\type\TypeConstraint;
+use n2n\util\ex\IllegalStateException;
 
 class PropertiesAnalyzer {
 	private $class;
@@ -87,18 +88,25 @@ class PropertiesAnalyzer {
 	}
 	// @todo private properties in super class cause exception, wait for persistance api to solve
 
+
+	public function analyzeOptProperty($propertyName, bool $settingRequired = true, bool $gettingRequired = true): PropertyAccessProxy|null {
+		return IllegalStateException::try(
+				fn () => $this->analyzeProperty($propertyName, $settingRequired, $gettingRequired, false));
+	}
+
 	/**
 	 * @param $propertyName
-	 * @param $settingRequired
-	 * @param $gettingRequired
-	 * @param $required
+	 * @param bool $settingRequired
+	 * @param bool $gettingRequired
+	 * @param bool $required
 	 * @return PropertyAccessProxy|null
 	 * @throws InaccessiblePropertyException
 	 * @throws InvalidPropertyAccessMethodException
 	 * @throws UnknownPropertyException
 	 * @throws \ReflectionException
 	 */
-	public function analyzeProperty($propertyName, $settingRequired = true, $gettingRequired = true, $required = true) {
+	public function analyzeProperty($propertyName, bool $settingRequired = true, bool $gettingRequired = true,
+			bool $required = true): PropertyAccessProxy|null {
 		$property = null;
 		if ($this->class->hasProperty($propertyName)) {
 			$property = $this->class->getProperty($propertyName);
@@ -110,7 +118,7 @@ class PropertiesAnalyzer {
 		if (is_null($property) 
 				&& ($this->ignoreAccessMethods || !$this->scoutForPropertyMethods($propertyName))) {
 			if (!$required) return null;
-			throw new UnknownPropertyException('Property not found: ' . $this->class->getName() 
+			throw new UnknownPropertyException('Property not found: ' . $this->class->getName()
 					. '::$' . $propertyName);
 		}
 		
@@ -130,8 +138,12 @@ class PropertiesAnalyzer {
 		return $this->class->hasMethod('get' . ucfirst($propertyName))
 				|| $this->class->hasMethod('set' . ucfirst($propertyName)) || $this->class->hasMethod('is' . ucfirst($propertyName));
 	}
-	
-	private function getGetterMethod($propertyName, $required, \ReflectionProperty $property = null) {
+
+	/**
+	 * @throws \ReflectionException
+	 * @throws InaccessiblePropertyException
+	 */
+	private function getGetterMethod($propertyName, $required, \ReflectionProperty $property = null): ?\ReflectionMethod {
 		$getterMethodName = 'get' . ucfirst($propertyName);
 		$testMethodName = 'is' . ucfirst($propertyName);
 		
@@ -140,7 +152,7 @@ class PropertiesAnalyzer {
 		} else if ($this->class->hasMethod($testMethodName)) {
 			$getterMethod = $this->class->getMethod($testMethodName);
 		} else if ($required){
-			throw new InaccessiblePropertyException($property, 'Getter method (' 
+			throw new InaccessiblePropertyException($property, 'Getter method ('
 					. $getterMethodName . ' or ' . $testMethodName 
 					. ') for inaccessible property required: ' 
 					. TypeUtils::prettyClassPropName($this->class, $propertyName));
@@ -151,7 +163,7 @@ class PropertiesAnalyzer {
 		if (!$getterMethod->isPublic()) {
 			if (!$required) return null;
 			
-			throw new InvalidPropertyAccessMethodException($getterMethod, 
+			throw new InvalidPropertyAccessMethodException($getterMethod,
 					'Getter method must have public visibility. Given: ' 
 						. $getterMethod->getDeclaringClass()->getName() . '::' 
 						. $getterMethod->getName());
@@ -159,7 +171,7 @@ class PropertiesAnalyzer {
 	
 		foreach ($getterMethod->getParameters() as $parameter) {
 			if (!$parameter->isOptional()) {
-				throw new InvalidPropertyAccessMethodException($getterMethod, 
+				throw new InvalidPropertyAccessMethodException($getterMethod,
 						'Property getter method does not allow non optional parameters. Given: ' 
 						. $getterMethod->getDeclaringClass()->getName() . '::' 
 						. $getterMethod->getName());
@@ -172,14 +184,19 @@ class PropertiesAnalyzer {
 	public static function buildSetterName($propertyName) {
 		return 'set' . ucfirst($propertyName);
 	}
-	
+
+	/**
+	 * @throws InaccessiblePropertyException
+	 * @throws InvalidPropertyAccessMethodException
+	 * @throws \ReflectionException
+	 */
 	private function getSetterMethod($propertyName, $required, \ReflectionProperty $property = null) {
 		$setterMethodName = self::buildSetterName($propertyName);
 		
 		if (!$this->class->hasMethod($setterMethodName)) {
 			if (!$required) return null;
 			
-			throw new InaccessiblePropertyException($property, 
+			throw new InaccessiblePropertyException($property,
 					'Managed property setter method required: ' . TypeUtils::prettyClassMethName($this->class, $setterMethodName));
 		}
 	
@@ -187,7 +204,7 @@ class PropertiesAnalyzer {
 		if (!$setterMethod->isPublic()) {
 			if (!$required) return null;
 			
-			throw new InvalidPropertyAccessMethodException($setterMethod, 
+			throw new InvalidPropertyAccessMethodException($setterMethod,
 					'Managed property setter method must have public visibility: ' 
 							. TypeUtils::prettyReflMethName($setterMethod));
 		}
@@ -202,7 +219,7 @@ class PropertiesAnalyzer {
 		}
 		
 		if (!sizeof($parameters)) {
-			throw new InvalidPropertyAccessMethodException($setterMethod, 
+			throw new InvalidPropertyAccessMethodException($setterMethod,
 						'Managed property setter method requires parameter: '
 								. TypeUtils::prettyReflMethName($setterMethod));
 		}
@@ -210,15 +227,18 @@ class PropertiesAnalyzer {
 		return $setterMethod;
 	}
 	
-	public function getSetterConstraints($propertyName, &$setterMethod = null) {
-		$setterMethod = $this->getSetterMethod($propertyName, false);
-		if (is_null($setterMethod)) return null;
-		
-		$parameter = current($setterMethod->getParameters());
-		return TypeConstraint::createFromParameterProperties(ReflectionUtils::extractParameterClass($parameter), 
-				$parameter->isArray(), $parameter->allowsNull());
-	}
-	
+//	public function getSetterConstraints($propertyName, &$setterMethod = null) {
+//		$setterMethod = $this->getSetterMethod($propertyName, false);
+//		if (is_null($setterMethod)) return null;
+//
+//		$parameter = current($setterMethod->getParameters());
+//		return TypeConstraint::createFromParameterProperties(ReflectionUtils::extractParameterClass($parameter),
+//				$parameter->isArray(), $parameter->allowsNull());
+//	}
+
+	/**
+	 * @throws InvalidPropertyAccessMethodException
+	 */
 	public static function parsePropertyName(\ReflectionMethod $method) {
 		$methodName = $method->getName();
 		$prefix = mb_substr($methodName, 0, 3);
@@ -231,7 +251,7 @@ class PropertiesAnalyzer {
 			return lcfirst(mb_substr($methodName, 2));
 		}
 		
-		throw new InvalidPropertyAccessMethodException($method, 
+		throw new InvalidPropertyAccessMethodException($method,
 				'Property access method must have prefix \'get\', \'set\' or \'is\'. Given: ' 
 						. $method->getDeclaringClass()->getName() . '::' . $methodName . '()');
 	}

@@ -35,10 +35,11 @@ class TypeExpressionResolver {
 		$this->currentNamespace = $currentNamespace;
 		$this->moduleManager = $moduleManager;
 	}
-	
+
 	/**
 	 * @param string $typeExpression
 	 * @return string
+	 * @throws UnresolvableTypeExpressionException
 	 */
 	public function resolve(string $typeExpression): string {
 		if (StringUtils::startsWith(self::MODULE_ALIAS . '\\', $typeExpression)) {
@@ -61,7 +62,7 @@ class TypeExpressionResolver {
 			switch ($pathPart) {
 				case '..':
 					if (empty($resolvedPathParts)) {
-						throw $this->createException('Illegal occurrence of \'..\'.');
+						throw $this->createException($typeExpression, 'Illegal occurrence of \'..\'.');
 					}
 					
 					array_pop($resolvedPathParts);

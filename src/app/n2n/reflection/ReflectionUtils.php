@@ -136,8 +136,8 @@ class ReflectionUtils {
 	}
 	/**
 	 * @param \ReflectionClass $class
-	 * @throws ObjectCreationFailedException
 	 * @return mixed
+	 * @throws ObjectCreationFailedException
 	 */
 	public static function createObject(\ReflectionClass $class, bool $callConstructor = true) {
 		$args = array();
@@ -157,7 +157,7 @@ class ReflectionUtils {
 // 							. $parameter->getName());
 // 				}
 				
-				throw new ObjectCreationFailedException('Constructor ' . $constructor->getDeclaringClass()->getName() 
+				throw new ObjectCreationFailedException('Constructor ' . $constructor->getDeclaringClass()->getName()
 						. '::' . $constructor->getName() . '() contains non-optional parameter: $' 
 						. $parameter->getName());
 			}
@@ -174,7 +174,7 @@ class ReflectionUtils {
 				return $class->newInstanceWithoutConstructor();
 			}
 		} catch (\ReflectionException $e) {
-			throw new ObjectCreationFailedException('Could not create instance: ' 
+			throw new ObjectCreationFailedException('Could not create instance: '
 					. $class->getName(), 0, $e);
 		}
 	}

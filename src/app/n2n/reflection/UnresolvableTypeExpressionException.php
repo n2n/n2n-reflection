@@ -21,5 +21,5 @@
  */
 namespace n2n\reflection;
 
-class UnresolvableTypeExpressionException extends ReflectionException {
+class UnresolvableTypeExpressionException extends \ReflectionException {
 }

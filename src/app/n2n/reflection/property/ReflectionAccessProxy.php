@@ -180,36 +180,36 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	}
 
 	/**
-	 * @param ValueIncompatibleWithConstraintsException $e
-	 * @return PropertyValueTypeMissmatchException
+	 * @param ValueIncompatibleWithConstraintsException $previous
+	 * @return PropertyValueTypeMismatchException
 	 */
-	public function createPassedValueException(\Throwable $e): PropertyValueTypeMissmatchException {
+	public function createPassedValueException(\Throwable $previous): PropertyValueTypeMismatchException {
 		if ($this->isPropertyAccessSetterMode()) {
-			return new PropertyValueTypeMissmatchException('Passed value for '
+			return new PropertyValueTypeMismatchException('Passed value for '
 					. $this->property->getDeclaringClass()->getName() . '::$' . $this->property->getName()
-					. ' is incompatible with constraints.', 0, $e);
+					. ' is incompatible with constraints.', 0, $previous);
 		} else {
-			return new PropertyValueTypeMissmatchException('Passed value for '
+			return new PropertyValueTypeMismatchException('Passed value for '
 					. $this->setterMethod->getDeclaringClass()->getName() . '::' . $this->setterMethod->getName()
-					. '() is disallowed for property setter method.', 0, $e);
+					. '() is disallowed for property setter method.', 0, $previous);
 		}
 	}
 
 
-	public function createReturnedValueException(\Throwable $previous): PropertyValueTypeMissmatchException {
+	public function createReturnedValueException(\Throwable $previous): PropertyValueTypeMismatchException {
 		if ($this->isPropertyAccessGetterMode()) {
-			return new PropertyValueTypeMissmatchException('Property '
+			return new PropertyValueTypeMismatchException('Property '
 					. $this->property->getDeclaringClass()->getName() . '::$'
 					. $this->property->getName() . ' contains unexpected type.', 0, $previous);
 		} else {
-			return new PropertyValueTypeMissmatchException('Getter method '
+			return new PropertyValueTypeMismatchException('Getter method '
 					. $this->getterMethod->getDeclaringClass()->getName() . '::'
 					. $this->getterMethod->getName() . '()  returns unexpected type', 0, $previous);
 		}
 	}
 
 	/**
-	 * @throws PropertyValueTypeMissmatchException
+	 * @throws PropertyValueTypeMismatchException
 	 * @throws PropertyAccessException
 	 */
 	public function setValue(object $object, mixed $value, bool $validate = true): void {
@@ -242,7 +242,7 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	}
 
 	/**
-	 * @throws PropertyValueTypeMissmatchException
+	 * @throws PropertyValueTypeMismatchException
 	 * @throws PropertyAccessException
 	 */
 	public function getValue(object $object): mixed {

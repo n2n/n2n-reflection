@@ -23,7 +23,6 @@ namespace n2n\reflection\magic;
 
 use n2n\core\N2N;
 use n2n\core\module\Module;
-use n2n\reflection\ReflectionException;
 use n2n\reflection\ReflectionUtils;
 use n2n\util\ex\IllegalStateException;
 use n2n\core\TypeNotFoundException;
@@ -112,8 +111,8 @@ class MagicMethodInvoker {
 	
 	/**
 	 * 
-	 * @throws CanNotFillParameterException
 	 * @return array
+	 * @throws CanNotFillParameterException
 	 */
 	public function buildArgs(\ReflectionFunctionAbstract $method, array $firstArgs) {
 		$args = array();
@@ -253,7 +252,7 @@ class MagicMethodInvoker {
 	}
 }
 
-class CanNotFillParameterException extends ReflectionException {
+class CanNotFillParameterException extends \ReflectionException {
 	private $parameter;
 	/**
 	 * 

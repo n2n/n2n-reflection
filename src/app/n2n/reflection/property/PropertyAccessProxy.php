@@ -45,13 +45,13 @@ interface PropertyAccessProxy extends AccessProxy {
 
 	/**
 	 * @param Throwable $previous
-	 * @return PropertyValueTypeMissmatchException
+	 * @return PropertyValueTypeMismatchException
 	 */
-	function createPassedValueException(Throwable $previous): PropertyValueTypeMissmatchException;
+	function createPassedValueException(Throwable $previous): PropertyValueTypeMismatchException;
 
 	/**
 	 * @param Throwable $previous
-	 * @return PropertyValueTypeMissmatchException
+	 * @return PropertyValueTypeMismatchException
 	 */
-	public function createReturnedValueException(Throwable $previous): PropertyValueTypeMissmatchException;
+	public function createReturnedValueException(Throwable $previous): PropertyValueTypeMismatchException;
 }

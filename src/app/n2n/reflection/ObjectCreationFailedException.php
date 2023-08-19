@@ -21,6 +21,6 @@
  */
 namespace n2n\reflection;
 
-class ObjectCreationFailedException extends ReflectionException {
+class ObjectCreationFailedException extends \ReflectionException {
 
 }

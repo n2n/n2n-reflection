@@ -58,6 +58,7 @@ class RestrictedAccessProxy implements PropertyAccessProxy {
 		$this->propertyAccessProxy->setValue($object, $value, $validate);
 	}
 
+
 	public function getValue(object $object): mixed {
 		$value = $this->propertyAccessProxy->getValue($object);
 
@@ -96,11 +97,11 @@ class RestrictedAccessProxy implements PropertyAccessProxy {
 		return $this->propertyAccessProxy->getGetterMethod();
 	}
 
-	function createPassedValueException(Throwable $previous): PropertyValueTypeMissmatchException {
+	function createPassedValueException(Throwable $previous): PropertyValueTypeMismatchException {
 		return $this->propertyAccessProxy->createPassedValueException($previous);
 	}
 
-	public function createReturnedValueException(Throwable $previous): PropertyValueTypeMissmatchException {
+	public function createReturnedValueException(Throwable $previous): PropertyValueTypeMismatchException {
 		return $this->propertyAccessProxy->createReturnedValueException($previous);
 	}
 }
