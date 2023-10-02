@@ -22,7 +22,7 @@
 namespace n2n\reflection\magic;
 
 use n2n\reflection\ReflectionUtils;
-use n2n\reflection\ReflectionErrorException;
+use n2n\reflection\ReflectionError;
 use n2n\util\magic\MagicContext;
 use n2n\util\type\TypeUtils;
 
@@ -63,13 +63,13 @@ class MagicUtils {
 	 * @param string $methodName
 	 * @param bool $oneRequired
 	 * @param MagicContext|null $magicContext
-	 * @throws ReflectionErrorException
+	 * @throws ReflectionError
 	 */
 	public static function callMethodHierarchy(\ReflectionClass $class, $object, string $methodName, 
 			bool $oneRequired, MagicContext $magicContext = null) {
 		$methods = ReflectionUtils::extractMethodHierarchy($class, $methodName);
 		if ($oneRequired && !sizeof($methods)) {
-			throw new ReflectionErrorException('Magic method missing: ' . $class->getName() . '::' 
+			throw new ReflectionError('Magic method missing: ' . $class->getName() . '::'
 					. $methodName . '()', $class->getFileName(), $class->getStartLine());
 		}
 	
@@ -81,8 +81,8 @@ class MagicUtils {
 			$method->setAccessible(true);
 			try {
 				$methodInvoker->invoke($object, $method);
-			} catch (CanNotFillParameterException $e) {
-				throw new ReflectionErrorException($e->getMessage(),
+			} catch (CanNotFillParameterException|ReflectionError $e) {
+				throw new ReflectionError($e->getMessage(),
 						$method->getDeclaringClass()->getFileName(), $method->getStartLine(), null, null, $e);
 			}
 		}
@@ -91,11 +91,11 @@ class MagicUtils {
 	/**
 	 *
 	 * @param \ReflectionMethod $method
-	 * @throws ReflectionErrorException
+	 * @throws ReflectionError
 	 */
 	public static function validateMagicMethodSignature(\ReflectionMethod $method) {
 		if (!$method->isPrivate() || $method->isStatic() || $method->isAbstract()) {
-			throw new ReflectionErrorException('Invalid magic method signature of method ' 
+			throw new ReflectionError('Invalid magic method signature of method '
 							. TypeUtils::prettyReflMethName($method) 
 							. '. Required signature: private function ' . $method->getName() . '();',
 					$method->getFileName(), $method->getStartLine());

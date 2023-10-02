@@ -21,15 +21,15 @@
  */
 namespace n2n\reflection\annotation;
 
-use n2n\reflection\ReflectionErrorException;
+use n2n\reflection\ReflectionError;
 use n2n\reflection\ReflectionUtils;
 
 class AnnotationSetFactory {
 	const ANNOTATION_METHOD = '_annos';
 	/**
 	 * @param \ReflectionClass $class
-	 * @throws ReflectionErrorException
 	 * @return \n2n\reflection\annotation\AnnotationSet
+	 *@throws ReflectionError
 	 */
 	public static function create(\ReflectionClass $class) {
 		$annotationSet = new AnnotationSet();
@@ -46,7 +46,7 @@ class AnnotationSetFactory {
 		if (!$method->isStatic() || !$method->isPrivate() || $method->isAbstract() 
 				|| 1 != sizeof($parameters) || is_null(ReflectionUtils::extractParameterClass($parameter)) 
 				|| ReflectionUtils::extractParameterClass($parameter)->getName() != 'n2n\reflection\annotation\AnnoInit') {
-			throw new ReflectionErrorException('Annotations method signature must match: ' 
+			throw new ReflectionError('Annotations method signature must match: '
 					. 'private static function ' . self::ANNOTATION_METHOD 
 					. '(n2n\reflection\annotation\AnnoInit);', $method->getFileName(), $method->getStartLine());
 		}
@@ -64,11 +64,11 @@ class AnnotationSetFactory {
 		foreach ($e->getTrace() as $traceMap) {
 			if ($traceMap['file'] == $method->getDeclaringClass()->getFileName() && $traceMap['line'] > $method->getStartLine()
 					&& $traceMap['line'] < $method->getEndLine()) {
-				return new ReflectionErrorException('Misconfigured annotation', $traceMap['file'], 
+				return new ReflectionError('Misconfigured annotation', $traceMap['file'],
 						$traceMap['line'], null, null, $e);
 			}
 		}
-		return new ReflectionErrorException('Misconfigured annotation', $traceMap['file'], null, 
-				$this->method->getStartLine(), $this->method->getEndLine(), $e);
+		return new ReflectionError('Misconfigured annotation', $traceMap['file'], null,
+				$method->getStartLine(), $method->getEndLine(), $e);
 	}
 }

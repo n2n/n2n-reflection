@@ -22,7 +22,7 @@
 namespace n2n\reflection\annotation;
 
 use n2n\util\type\ArgUtils;
-use n2n\reflection\ReflectionErrorException;
+use n2n\reflection\ReflectionError;
 
 class AnnoInit {
 	private $class;
@@ -137,7 +137,7 @@ class AnnoInit {
 			$line = null;
 			$this->trace($fileName, $line, 2);
 			
-			throw new ReflectionErrorException('Annotated method not found: ' . $methodName,
+			throw new ReflectionError('Annotated method not found: ' . $methodName,
 					$fileName, $line, null, null, $methodE);
 		}
 	

@@ -26,6 +26,9 @@ use n2n\util\io\ob\OutputBuffer;
 use n2n\reflection\annotation\Annotation;
 use n2n\core\TypeNotFoundException;
 use n2n\reflection\attribute\Attribute;
+use n2n\util\ex\err\FancyError;
+use n2n\util\type\NamedTypeConstraint;
+use n2n\util\type\UnionTypeConstraint;
 
 class ReflectionUtils {
 
@@ -59,13 +62,12 @@ class ReflectionUtils {
 			
 		throw new \InvalidArgumentException();
 	}
-	
+
 	/**
 	 * @param \ReflectionParameter $parameter
-	 * @throws ReflectionErrorException
-	 * @return \ReflectionClass
+	 * @return \ReflectionClass|null
 	 */
-	public static function extractParameterClass(\ReflectionParameter $parameter) {
+	public static function extractParameterClass(\ReflectionParameter $parameter): ?\ReflectionClass {
 		$type = $parameter->getType();
 		if (!($type instanceof \ReflectionNamedType) || $type->isBuiltin()) {
 			return null;
@@ -87,8 +89,51 @@ class ReflectionUtils {
 		}
 
 		$declaringFunction = $parameter->getDeclaringFunction();
-		throw new ReflectionErrorException('Unkown type defined for parameter: ' . $parameter->getName(),
+		throw new ReflectionError('Unhandleable type defined for parameter: ' . $parameter->getName(),
 				$declaringFunction->getFileName(), $declaringFunction->getStartLine(), null, null, $e);
+	}
+
+	/**
+	 * @param \ReflectionParameter $parameter
+	 * @return array<\ReflectionClass>
+	 */
+	public static function extractParameterClasses(\ReflectionParameter $parameter): array {
+		$type = $parameter->getType();
+
+		if ($type === null) {
+			return [];
+		}
+
+		try {
+			return self::extractClasses($type);
+		} catch (\ReflectionException $e) {
+			$declaringFunction = $parameter->getDeclaringFunction();
+			throw new ReflectionError('Unknown type defined for parameter: ' . $parameter->getName(),
+					$declaringFunction->getFileName(), $declaringFunction->getStartLine(), null, null, $e);
+		}
+	}
+
+	/**
+	 * @throws \ReflectionException
+	 */
+	private static function extractClasses(\ReflectionType $type): array {
+		if ($type instanceof \ReflectionNamedType) {
+			if ($type->isBuiltin()) {
+				return [];
+			}
+
+			return [self::createReflectionClass($type->getName())];
+		}
+
+		if ($type instanceof \ReflectionUnionType) {
+			$classes = [];
+			foreach ($type->getTypes() as $type) {
+				array_push($classes, ...self::extractClasses($type));
+			}
+			return $classes;
+		}
+
+		return [];
 	}
 
 

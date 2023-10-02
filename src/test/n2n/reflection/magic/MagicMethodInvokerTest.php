@@ -18,4 +18,29 @@ class MagicMethodInvokerTest extends TestCase {
 		$invoker->invoke(new MethodsObj(), $class->getMethod('intMethod'));
 		
 	}
+
+	function testUnion() {
+
+
+
+		$param = new \DateTime();
+		$methodsObjMock = $this->createMock(MethodsObj::class);
+		$methodsObjMock->expects($this->once())->method('union')->with($param);
+		$class = new \ReflectionClass($methodsObjMock);
+
+		$invoker = new MagicMethodInvoker();
+		$invoker->setClassParamObject(\DateTime::class, $param);
+		$invoker->invoke($methodsObjMock, $class->getMethod('union'));
+
+
+		$param = new \ArrayObject();
+		$methodsObjMock = $this->createMock(MethodsObj::class);
+		$methodsObjMock->expects($this->once())->method('union')->with($param);
+		$class = new \ReflectionClass($methodsObjMock);
+
+		$invoker = new MagicMethodInvoker();
+		$invoker->setClassParamObject(\ArrayObject::class, new \ArrayObject());
+		$invoker->invoke($methodsObjMock, $class->getMethod('union'));
+
+	}
 }

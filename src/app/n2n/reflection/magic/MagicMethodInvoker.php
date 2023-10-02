@@ -29,7 +29,7 @@ use n2n\core\TypeNotFoundException;
 use n2n\util\magic\MagicContext;
 use n2n\util\type\TypeUtils;
 use n2n\util\type\TypeConstraint;
-use n2n\reflection\ReflectionErrorException;
+use n2n\reflection\ReflectionError;
 use n2n\util\magic\MagicLookupFailedException;
 
 class MagicMethodInvoker {
@@ -78,7 +78,7 @@ class MagicMethodInvoker {
 	 * @param string $name
 	 * @param string $value
 	 */
-	public function setParamValue($name, $value): void {
+	public function setParamValue(string $name, mixed $value): void {
 		$this->paramValues[$name] = $value;
 	}
 	/**
@@ -90,7 +90,7 @@ class MagicMethodInvoker {
 		$this->classParamObjects[$className] = $obj;
 	}
 	
-	public function getClassParamObject($className) {
+	public function getClassParamObject(string $className) {
 		if (isset($this->classParamObjects[$className])) {
 			return $this->classParamObjects[$className];
 		}
@@ -108,7 +108,17 @@ class MagicMethodInvoker {
 	public function getReturnTypeConstraint(): ?TypeConstraint {
 		return $this->returnTypeConstraint;
 	}
-	
+
+	private function findClassParamsObj(\ReflectionParameter $parameter): mixed {
+		foreach (ReflectionUtils::extractParameterClasses($parameter) as $class) {
+			if (null !== ($obj = $this->getClassParamObject($class->getName()))) {
+				return $obj;
+			}
+		}
+
+		return null;
+	}
+
 	/**
 	 * 
 	 * @return array
@@ -128,16 +138,7 @@ class MagicMethodInvoker {
 				continue;
 			}
 
-			$parameterClass = null;
-			
-			try {
-				$parameterClass = ReflectionUtils::extractParameterClass($parameter);
-			} catch (\ReflectionException $e) {
-				throw new CanNotFillParameterException($parameter, $e->getMessage(), 0, $e->getPrevious());
-			}
-
-			if ($parameterClass !== null 
-					&& null !== ($obj = $this->getClassParamObject($parameterClass->getName()))) {
+			if (null !== ($obj = $this->findClassParamsObj($parameter))) {
 				$args[] = $obj;
 				continue;
 			}
@@ -170,16 +171,18 @@ class MagicMethodInvoker {
 	/**
 	 * @param \ReflectionParameter $parameter
 	 * @return mixed
-	 * @throws ReflectionErrorException
+	 * @throws ReflectionError
 	 * @throws MagicLookupFailedException
 	 */
 	private function lookupParameterValue(\ReflectionParameter $parameter) {
-		$parameterClass = ReflectionUtils::extractParameterClass($parameter);
+		$parameterClasses = ReflectionUtils::extractParameterClasses($parameter);
 
-		if ($this->magicContext !== null && $parameterClass !== null) {
-			$fallbackAvailable = $parameter->isDefaultValueAvailable() || $parameter->allowsNull();
-			return $this->magicContext->lookup($parameterClass, !$fallbackAvailable,
-					$this->determineNamespaceOfParameter($parameter));
+		if ($this->magicContext !== null) {
+			foreach ($parameterClasses as $parameterClass) {
+				$fallbackAvailable = $parameter->isDefaultValueAvailable() || $parameter->allowsNull();
+				return $this->magicContext->lookup($parameterClass, !$fallbackAvailable,
+						$this->determineNamespaceOfParameter($parameter));
+			}
 		}
 
 		if ($parameter->isDefaultValueAvailable()) {
@@ -188,7 +191,7 @@ class MagicMethodInvoker {
 			return null;
 		}
 
-		throw new \LogicException();
+		throw new MagicLookupFailedException('Unhandleable parameter type.');
 	}
 
 	private function determineNamespaceOfParameter(\ReflectionParameter $parameter) {
@@ -246,7 +249,7 @@ class MagicMethodInvoker {
 			return;
 		}
 		
-		throw new ReflectionErrorException(TypeUtils::prettyReflMethName($method) . ' must return ' 
+		throw new ReflectionError(TypeUtils::prettyReflMethName($method) . ' must return '
 						. $this->returnTypeConstraint . '. '.  TypeUtils::getTypeInfo($value) . ' returned.',
 				$method->getFileName(), $method->getStartLine());
 	}
