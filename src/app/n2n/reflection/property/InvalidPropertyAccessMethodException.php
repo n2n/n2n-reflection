@@ -25,7 +25,7 @@ class InvalidPropertyAccessMethodException extends \ReflectionException {
 	private $method;
 	
 	public function __construct(\ReflectionMethod $method, $message, $code = null, \Exception $previous = null) {
-		parent::__construct($message, $code, $previous);
+		parent::__construct($message, (int) $code, $previous);
 		$this->method = $method;
 	}
 	
