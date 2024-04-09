@@ -42,7 +42,14 @@ class MagicMethodInvoker {
 	private $returnTypeConstraint = null;
 
 	public function __construct(private ?MagicContext $magicContext = null) {
+	}
+
+	function setMagicContext(?MagicContext $magicContext): void {
 		$this->magicContext = $magicContext;
+	}
+
+	function getMagicContext(): ?MagicContext {
+		return $this->magicContext;
 	}
 
 	public function setMethod(?\ReflectionFunctionAbstract $method): void {
