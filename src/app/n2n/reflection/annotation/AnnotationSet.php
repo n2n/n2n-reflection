@@ -176,12 +176,8 @@ class AnnotationSet {
 		return isset($this->methodAnnotations[$annotationName]) 
 				&& isset($this->methodAnnotations[$annotationName][$methodName]);
 	}
-	/**
-	 * @param string $methodName
-	 * @param string $annotationName
-	 * @return boolean
-	 */
-	public function getMethodAnnotation($methodName, $annotationName) {
+
+	public function getMethodAnnotation(string $methodName, string $annotationName): ?MethodAnnotation {
 		if ($this->hasMethodAnnotation($methodName, $annotationName)) {
 			return $this->methodAnnotations[$annotationName][$methodName];
 		}
