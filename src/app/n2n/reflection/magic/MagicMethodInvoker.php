@@ -21,16 +21,14 @@
  */
 namespace n2n\reflection\magic;
 
-use n2n\core\N2N;
-use n2n\core\module\Module;
 use n2n\reflection\ReflectionUtils;
 use n2n\util\ex\IllegalStateException;
-use n2n\core\TypeNotFoundException;
 use n2n\util\magic\MagicContext;
 use n2n\util\type\TypeUtils;
 use n2n\util\type\TypeConstraint;
 use n2n\reflection\ReflectionError;
 use n2n\util\magic\MagicLookupFailedException;
+use n2n\reflection\ReflectionRuntimeException;
 
 class MagicMethodInvoker {
 	private \ReflectionFunctionAbstract $method;
@@ -210,13 +208,14 @@ class MagicMethodInvoker {
 	}
 
 	/**
-	 * 
-	 * @param object $object
+	 * @param $object
+	 * @param \ReflectionFunctionAbstract|\Closure|null $method
+	 * @param array $firstArgs
 	 * @return mixed
-	 */	
+	 */
 	public function invoke($object = null, \ReflectionFunctionAbstract|\Closure $method = null, array $firstArgs = []): mixed {
 		if ($method instanceof \Closure) {
-			$method = new \ReflectionFunction($method);
+			$method = ReflectionRuntimeException::try(fn () => new \ReflectionFunction($method));
 		}
 
 		if ($method === null) {
@@ -229,7 +228,7 @@ class MagicMethodInvoker {
 		
 		$returnValue = null;
 		if ($method instanceof \ReflectionMethod) {
-			$returnValue = $method->invokeArgs($object, $this->buildArgs($method, $firstArgs));
+			$returnValue = ReflectionRuntimeException::try(fn () => $method->invokeArgs($object, $this->buildArgs($method, $firstArgs)));
 		} else if ($method->isClosure()) {
 			$returnValue = call_user_func(
 					\Closure::bind(
@@ -240,7 +239,9 @@ class MagicMethodInvoker {
 		} else {
 			$returnValue = $method->invokeArgs($this->buildArgs($method, $firstArgs));
 		}
-		
+
+
+
 		$this->valReturn($method, $returnValue);
 		
 		return $returnValue;
@@ -262,7 +263,7 @@ class MagicMethodInvoker {
 	}
 }
 
-class CanNotFillParameterException extends \ReflectionException {
+class CanNotFillParameterException extends ReflectionRuntimeException {
 	private $parameter;
 	/**
 	 * 
