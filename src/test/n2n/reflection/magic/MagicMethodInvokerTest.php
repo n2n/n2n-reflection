@@ -3,6 +3,7 @@ namespace n2n\reflection\magic;
 
 use PHPUnit\Framework\TestCase;
 use n2n\reflection\magic\mock\MethodsObj;
+use n2n\reflection\ReflectionRuntimeException;
 
 class MagicMethodInvokerTest extends TestCase {
 	
@@ -14,7 +15,7 @@ class MagicMethodInvokerTest extends TestCase {
 		$invoker = new MagicMethodInvoker();
 		$invoker->setParamValue('intParam', 'holeradio');
 		
-		$this->expectException(\TypeError::class);
+		$this->expectException(ReflectionRuntimeException::class);
 		$invoker->invoke(new MethodsObj(), $class->getMethod('intMethod'));
 		
 	}

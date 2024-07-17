@@ -240,8 +240,6 @@ class MagicMethodInvoker {
 			$returnValue = $method->invokeArgs($this->buildArgs($method, $firstArgs));
 		}
 
-
-
 		$this->valReturn($method, $returnValue);
 		
 		return $returnValue;
