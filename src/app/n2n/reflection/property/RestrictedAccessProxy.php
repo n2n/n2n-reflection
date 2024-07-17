@@ -45,8 +45,12 @@ class RestrictedAccessProxy implements PropertyAccessProxy {
 		return $this->propertyAccessProxy->isWritable();
 	}
 
-	function getSetterConstraint(): TypeConstraint {
+	function getSetterConstraint(): ?TypeConstraint {
 		return $this->setterConstraint ?? $this->propertyAccessProxy->getSetterConstraint();
+	}
+
+	function isConstant(): bool {
+		return $this->propertyAccessProxy->isConstant();
 	}
 
 	public function setValue(object $object, mixed $value, bool $validate = true): void {
@@ -76,7 +80,7 @@ class RestrictedAccessProxy implements PropertyAccessProxy {
 		}
 	}
 
-	public function setNullReturnAllowed($nullReturnAllowed) {
+	public function setNullReturnAllowed(bool $nullReturnAllowed): void {
 		throw new UnsupportedOperationException();
 	}
 

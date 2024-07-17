@@ -72,8 +72,12 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	}
 
 	public function isWritable(): bool {
-		return (isset($this->property) && ($this->forcePropertyAccess || $this->property->isPublic()) && !$this->property->isReadOnly())
+		return (isset($this->property) && ($this->forcePropertyAccess || $this->property->isPublic()))
 				|| isset($this->setterMethod);
+	}
+
+	public function isConstant(): bool {
+		return isset($this->property) && $this->property->isReadOnly();
 	}
 
 	public function isNullReturnAllowed(): bool {

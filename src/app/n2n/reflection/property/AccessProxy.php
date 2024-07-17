@@ -61,6 +61,8 @@ interface AccessProxy {
 	 */
 	function isWritable(): bool;
 
+	function isConstant(): bool;
+
 	/**
 	 * @param TypeConstraint|null $getterConstraint
 	 * @param TypeConstraint|null $setterConstraint
@@ -86,7 +88,7 @@ interface AccessProxy {
 	 * @param bool $nullReturnAllowed
 	 * @deprecated
 	 */
-	public function setNullReturnAllowed($nullReturnAllowed);
+	public function setNullReturnAllowed(bool $nullReturnAllowed): void;
 	/**
 	 * @return boolean
 	 * @deprecated
