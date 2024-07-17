@@ -72,15 +72,15 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	}
 
 	public function isWritable(): bool {
-		return (isset($this->property) && ($this->forcePropertyAccess || $this->property->isPublic()))
+		return (isset($this->property) && ($this->forcePropertyAccess || $this->property->isPublic()) && !$this->property->isReadOnly())
 				|| isset($this->setterMethod);
 	}
 
-	public function isNullReturnAllowed() {
+	public function isNullReturnAllowed(): bool {
 		return $this->nullReturnAllowed;
 	}
 
-	public function setNullReturnAllowed($nullReturnAllowed) {
+	public function setNullReturnAllowed(bool $nullReturnAllowed): void {
 		$this->nullReturnAllowed = $nullReturnAllowed;
 	}
 
@@ -119,7 +119,7 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 		}
 	}
 
-	function getSetterConstraint(): TypeConstraint {
+	function getSetterConstraint(): ?TypeConstraint {
 		if (isset($this->setterConstraint)) {
 			return $this->setterConstraint;
 		}
@@ -130,7 +130,7 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 		}
 
 		if (!$this->isWritable()) {
-			throw new IllegalStateException($this . ' not writable.');
+			return null;
 		}
 
 		return $this->setterConstraint = TypeConstraints::type($this->property->getType());

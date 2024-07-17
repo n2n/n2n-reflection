@@ -168,7 +168,6 @@ class ReflectionUtils {
 	 * 
 	 * @param string $typeName
 	 * @return \ReflectionClass
-	 * @throws \ReflectionException
 	 */
 	public static function createReflectionClass(string $typeName): \ReflectionClass {
 //		if (class_exists(TypeLoader::class, false)) {
@@ -177,7 +176,7 @@ class ReflectionUtils {
 //			throw new TypeNotFoundException('Type not found: ' . $typeName);
 //		}
 
-		return new \ReflectionClass($typeName);
+		return ReflectionRuntimeException::try(fn () => new \ReflectionClass($typeName));
 	}
 	/**
 	 * @param \ReflectionClass $class

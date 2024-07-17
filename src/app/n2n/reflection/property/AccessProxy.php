@@ -52,10 +52,9 @@ interface AccessProxy {
 	function isReadable(): bool;
 
 	/**
-	 * @return TypeConstraint
-	 * @throws IllegalStateException if {@link self::isWritable()} returns false.
+	 * @return TypeConstraint|null null if {@link self::isWritable()} returns false.
 	 */
-	function getSetterConstraint(): TypeConstraint;
+	function getSetterConstraint(): ?TypeConstraint;
 
 	/**
 	 * @return bool

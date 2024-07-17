@@ -7,11 +7,14 @@ use n2n\util\ex\UnsupportedOperationException;
 use n2n\util\type\ValueIncompatibleWithConstraintsException;
 use ReflectionMethod;
 use Throwable;
+use n2n\util\type\ArgUtils;
 
 class RestrictedAccessProxy implements PropertyAccessProxy {
 
 	function __construct(private PropertyAccessProxy $propertyAccessProxy,
 			private ?TypeConstraint $getterConstraint = null, private ?TypeConstraint $setterConstraint = null) {
+		ArgUtils::assertTrue($this->isWritable() || $this->setterConstraint === null,
+				'Setter constraints for read only AccessProxy not possible');
 	}
 
 	public function getPropertyName(): string {
