@@ -15,7 +15,7 @@ class MagicMethodInvokerTest extends TestCase {
 		$invoker = new MagicMethodInvoker();
 		$invoker->setParamValue('intParam', 'holeradio');
 		
-		$this->expectException(ReflectionRuntimeException::class);
+		$this->expectException(\TypeError::class);
 		$invoker->invoke(new MethodsObj(), $class->getMethod('intMethod'));
 		
 	}
