@@ -25,7 +25,7 @@ class ReflectionRuntimeException extends \RuntimeException {
 	static function try(\Closure $closure): mixed {
 		try {
 			return $closure();
-		} catch (\Throwable $t) {
+		} catch (\ReflectionException $t) {
 			throw new ReflectionRuntimeException($t->getMessage(), previous: $t);
 		}
 	}
