@@ -73,20 +73,11 @@ class ReflectionUtils {
 			return null;
 		}
 
-		$thrownE = null;
-//		if (class_exists(TypeLoader::class, false)) {
-//			try {
-//				return ReflectionUtils::createReflectionClass($type->getName());
-//			} catch (\ReflectionException $e) {
-//				$thrownE = $e;
-//			}
-//		} else {
-			try {
-				return new \ReflectionClass($type->getName());
-			} catch (\ReflectionException $e) {
-				$thrownE = $e;
-			}
-//		}
+		try {
+			return new \ReflectionClass($type->getName());
+		} catch (\ReflectionException $e) {
+			$thrownE = $e;
+		}
 
 		$declaringFunction = $parameter->getDeclaringFunction();
 		throw new ReflectionError('Unhandleable type defined for parameter: ' . $parameter->getName(),
@@ -122,7 +113,7 @@ class ReflectionUtils {
 				return [];
 			}
 
-			return [self::createReflectionClass($type->getName())];
+			return [new \ReflectionClass($type->getName())];
 		}
 
 		if ($type instanceof \ReflectionUnionType) {
