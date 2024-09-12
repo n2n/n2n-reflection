@@ -21,10 +21,10 @@
  */
 namespace n2n\reflection;
 
-use n2n\core\TypeLoader;
+//use n2n\core\TypeLoader;
 use n2n\util\io\ob\OutputBuffer;
 use n2n\reflection\annotation\Annotation;
-use n2n\core\TypeNotFoundException;
+//use n2n\core\TypeNotFoundException;
 use n2n\reflection\attribute\Attribute;
 use n2n\util\ex\err\FancyError;
 use n2n\util\type\NamedTypeConstraint;
@@ -74,19 +74,19 @@ class ReflectionUtils {
 		}
 
 		$thrownE = null;
-		if (class_exists(TypeLoader::class, false)) {
-			try {
-				return ReflectionUtils::createReflectionClass($type->getName());
-			} catch (\ReflectionException $e) {
-				$thrownE = $e;
-			}
-		} else {
+//		if (class_exists(TypeLoader::class, false)) {
+//			try {
+//				return ReflectionUtils::createReflectionClass($type->getName());
+//			} catch (\ReflectionException $e) {
+//				$thrownE = $e;
+//			}
+//		} else {
 			try {
 				return new \ReflectionClass($type->getName());
 			} catch (\ReflectionException $e) {
 				$thrownE = $e;
 			}
-		}
+//		}
 
 		$declaringFunction = $parameter->getDeclaringFunction();
 		throw new ReflectionError('Unhandleable type defined for parameter: ' . $parameter->getName(),
