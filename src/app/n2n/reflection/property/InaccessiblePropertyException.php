@@ -24,8 +24,8 @@ namespace n2n\reflection\property;
 class InaccessiblePropertyException extends \ReflectionException {
 	private $property;
 	
-	public function __construct(\ReflectionProperty $property = null, string $message = null, int $code = null,
-			\Exception $previous = null) {
+	public function __construct(?\ReflectionProperty $property = null, ?string $message = null, ?int $code = null,
+			?\Exception $previous = null) {
 		parent::__construct($message ?? '', $code ?? 0, $previous);
 		$this->property = $property;
 	}

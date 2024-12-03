@@ -27,7 +27,7 @@ class LegacyConverter {
 	/**
 	 * @param AnnotationSet|null $annotationSet
 	 */
-	public function __construct(AnnotationSet $annotationSet = null) {
+	public function __construct(?AnnotationSet $annotationSet = null) {
 		$this->annotationSet = $annotationSet;
 
 		foreach ($this->annotationSet->getClassAnnotations() as $classAnnotation) {

@@ -75,7 +75,7 @@ class TypeExpressionResolver {
 		return implode('\\', $resolvedPathParts);
 	}
 	
-	private function createException(string $typeExpression, string $reason, \Throwable $previous = null) {
+	private function createException(string $typeExpression, string $reason, ?\Throwable $previous = null) {
 		return new UnresolvableTypeExpressionException('Could not resolve type expression: ' . $typeExpression
 				. ' Reason: ' . $reason, 0, $previous);
 	}

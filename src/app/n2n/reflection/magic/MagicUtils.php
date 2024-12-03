@@ -34,7 +34,7 @@ class MagicUtils {
 	 * @param object $object
 	 * @param MagicContext $magicContext
 	 */
-	public static function init(object $object, MagicContext $magicContext = null): void {
+	public static function init(object $object, ?MagicContext $magicContext = null): void {
 		self::callMethodHierarchy(new \ReflectionClass($object), $object, 
 				self::MAGIC_INIT_METHOD, false, $magicContext);
 	}
@@ -66,7 +66,7 @@ class MagicUtils {
 	 * @throws ReflectionError
 	 */
 	public static function callMethodHierarchy(\ReflectionClass $class, $object, string $methodName, 
-			bool $oneRequired, MagicContext $magicContext = null) {
+			bool $oneRequired, ?MagicContext $magicContext = null) {
 		$methods = ReflectionUtils::extractMethodHierarchy($class, $methodName);
 		if ($oneRequired && !sizeof($methods)) {
 			throw new ReflectionError('Magic method missing: ' . $class->getName() . '::'
@@ -102,7 +102,7 @@ class MagicUtils {
 		}
 	}
 	
-	// 	public static function callMethod($object, \ReflectionMethod $method, TypeConstraint $returnConstraints = null) {
+	// 	public static function callMethod($object, \ReflectionMethod $method, ?TypeConstraint $returnConstraints = null) {
 	// 		$methodInvoker = new MagicMethodInvoker($method);
 	// 		$value = $methodInvoker->invoke($object);
 	
@@ -118,7 +118,7 @@ class MagicUtils {
 	 * @return mixed|null
 	 * @throws \ReflectionException
 	 */
-	public function callMagicClosure(\Closure $closure, MagicContext $magicContext = null) {
+	public function callMagicClosure(\Closure $closure, ?MagicContext $magicContext = null) {
 		$magicMethodInvoker = new MagicMethodInvoker($magicContext);
 		return $magicMethodInvoker->invoke(null, new \ReflectionFunction($closure));
 	}

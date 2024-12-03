@@ -228,7 +228,7 @@ class AttributeSet {
      * @param string|null $attributeName
      * @return array
      */
-	private function retrieveAttributes(string $type, string $attributeName = null): array {
+	private function retrieveAttributes(string $type, ?string $attributeName = null): array {
 		if (!isset($this->attributes[$type])) {
 			return array();
 		}
@@ -436,7 +436,7 @@ class AttributeSet {
      * @return bool
      */
 	#[Pure]
-	private function isLoaded(string $type, string $attributeName = null, string $reflectorName = null) {
+	private function isLoaded(string $type, ?string $attributeName = null, ?string $reflectorName = null) {
 		return isset($this->loadedKeys[$this->loadedKey($type)])
                 || isset($this->loadedKeys[$this->loadedKey($type, $attributeName)])
                 || isset($this->loadedKeys[$this->loadedKey($type, $attributeName, $reflectorName)]);
@@ -447,7 +447,7 @@ class AttributeSet {
      * @param string|null $attributeName
      * @param string|null $reflectorName
      */
-	private function setLoaded(string $type, string $attributeName = null, string $reflectorName = null) {
+	private function setLoaded(string $type, ?string $attributeName = null, ?string $reflectorName = null) {
 		if ($this->isLoaded($type, $reflectorName, $attributeName)) {
 			return;
 		}
@@ -491,7 +491,7 @@ class AttributeSet {
      * @param string|null $reflectorName
      * @return string
      */
-	private function loadedKey(string $type, string $attributeName = null, string $reflectorName = null): string {
+	private function loadedKey(string $type, ?string $attributeName = null, ?string $reflectorName = null): string {
 		return $type . '-' . $attributeName . '-' . $reflectorName;
 	}
 

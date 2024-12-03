@@ -92,7 +92,7 @@ class RestrictedAccessProxy implements PropertyAccessProxy {
 		return $this->propertyAccessProxy->__toString();
 	}
 
-	function createRestricted(TypeConstraint $getterConstraint = null, TypeConstraint $setterConstraint = null): PropertyAccessProxy {
+	function createRestricted(?TypeConstraint $getterConstraint = null, ?TypeConstraint $setterConstraint = null): PropertyAccessProxy {
 		throw new UnsupportedOperationException();
 	}
 

@@ -215,17 +215,17 @@ class ReflectionUtils {
 	}
 	
 	
-	public static function isClassA(\ReflectionClass $class = null, \ReflectionClass $isAClass = null) {
+	public static function isClassA(?\ReflectionClass $class = null, ?\ReflectionClass $isAClass = null) {
 		if (is_null($class) || is_null($isAClass)) return false;
 		return $class->getName() == $isAClass->getName() || $class->isSubclassOf($isAClass);
 	}
 	
-	public static function areClassesEqual(\ReflectionClass $class1 = null, \ReflectionClass $class2 = null) {
+	public static function areClassesEqual(?\ReflectionClass $class1 = null, ?\ReflectionClass $class2 = null) {
 		if (is_null($class1) || is_null($class2)) return false;
 		return $class1 == $class2;
 	}
 	
-	public static function isObjectA($object, \ReflectionClass $isAClass = null) {
+	public static function isObjectA($object, ?\ReflectionClass $isAClass = null) {
 		return /*is_object($object) &&*/ $isAClass !== null && is_a($object, $isAClass->getName());
 	}
 	

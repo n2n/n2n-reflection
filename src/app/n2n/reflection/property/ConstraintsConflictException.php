@@ -24,7 +24,7 @@ namespace n2n\reflection\property;
 class ConstraintsConflictException extends \ReflectionException {
 	private $causingMethod;
 	
-	public function __construct(string $message = null, int $code = null, \Exception $previous = null, \ReflectionMethod $causingMethod = null) {
+	public function __construct(?string $message = null, ?int $code = null, ?\Exception $previous = null, ?\ReflectionMethod $causingMethod = null) {
 		parent::__construct($message ?? '', $code ?? 0, $previous);
 		$this->causingMethod = $causingMethod;
 	}

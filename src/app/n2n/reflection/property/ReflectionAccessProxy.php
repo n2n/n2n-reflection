@@ -42,8 +42,8 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	private TypeConstraint $getterConstraint;
 	private TypeConstraint $setterConstraint;
 
-	public function __construct($propertyName, \ReflectionProperty $property = null,
-			\ReflectionMethod $getterMethod = null, \ReflectionMethod $setterMethod = null) {
+	public function __construct($propertyName, ?\ReflectionProperty $property = null,
+			?\ReflectionMethod $getterMethod = null, ?\ReflectionMethod $setterMethod = null) {
 		$this->propertyName = $propertyName;
 		$this->property = $property;
 		$this->getterMethod = $getterMethod;
@@ -326,7 +326,7 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 		return 'AccessProxy [' . implode(', ', $strs) . ']';
 	}
 
-	function createRestricted(TypeConstraint $getterConstraint = null, TypeConstraint $setterConstraint = null): PropertyAccessProxy {
+	function createRestricted(?TypeConstraint $getterConstraint = null, ?TypeConstraint $setterConstraint = null): PropertyAccessProxy {
 		return new RestrictedAccessProxy($this, $getterConstraint, $setterConstraint);
 	}
 }

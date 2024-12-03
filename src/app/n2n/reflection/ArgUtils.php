@@ -29,7 +29,7 @@ class ArgUtils {
 	/**
 	 * @deprecated use {@see \n2n\util\type\ArgUtils::valType()}
 	 */
-	static function valType($param, $expectedType, bool $nullAllowed = false, string $parameterName = null) {
+	static function valType($param, $expectedType, bool $nullAllowed = false, ?string $parameterName = null) {
 		return \n2n\util\type\ArgUtils::valType($param, $expectedType, $nullAllowed, $parameterName);
 	}
 	
@@ -37,7 +37,7 @@ class ArgUtils {
 	 * @deprecated use {@see \n2n\util\type\ArgUtils::valArray()}
 	 */
 	static function valArray($value, $expectedFieldType, bool $nullAllowed = false,
-			string $parameterName = null) {
+			?string $parameterName = null) {
 		return \n2n\util\type\ArgUtils::valArray($value, $expectedFieldType, $nullAllowed, $parameterName);
 	}
 }

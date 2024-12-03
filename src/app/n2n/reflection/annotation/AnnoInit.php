@@ -39,8 +39,8 @@ class AnnoInit {
 		$line = $tps[$pos]['line'];
 	}
 	
-	public function c(ClassAnnotation $classAnnotation, ClassAnnotation $classAnnotation2 = null, 
-			ClassAnnotation $classAnnotation3 = null) {
+	public function c(ClassAnnotation $classAnnotation, ?ClassAnnotation $classAnnotation2 = null,
+			?ClassAnnotation $classAnnotation3 = null) {
 		$classAnnotations = func_get_args();
 		if (count($classAnnotations) > 3) {
 			ArgUtils::valArray($classAnnotations, 
@@ -59,7 +59,7 @@ class AnnoInit {
 	}
 	
 	public function p($propertyName, PropertyAnnotation $propertyAnnotation, 
-			PropertyAnnotation $propertyAnnotation2 = null, PropertyAnnotation $propertyAnnotation3 = null) {
+			?PropertyAnnotation $propertyAnnotation2 = null, ?PropertyAnnotation $propertyAnnotation3 = null) {
 		$propertyAnnotations = func_get_args();
 		array_shift($propertyAnnotations);
 		if (count($propertyAnnotations) > 3) {
@@ -101,7 +101,7 @@ class AnnoInit {
 	}
 	
 	public function m($methodName, MethodAnnotation $methodAnnotation, 
-			MethodAnnotation $methodAnnotation2 = null, MethodAnnotation $methodAnnotation3 = null) {
+			?MethodAnnotation $methodAnnotation2 = null, ?MethodAnnotation $methodAnnotation3 = null) {
 		$methodAnnotations = func_get_args();
 		array_shift($methodAnnotations);
 		if (count($methodAnnotations) > 3) {

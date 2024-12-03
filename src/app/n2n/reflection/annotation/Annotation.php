@@ -29,7 +29,7 @@ interface Annotation {
 	/**
 	 * @param string $fileName
 	 */
-	public function setFileName(string $fileName = null);
+	public function setFileName(?string $fileName = null);
 	/**
 	 * @return int 
 	 */
@@ -37,5 +37,5 @@ interface Annotation {
 	/**
 	 * @param int $line
 	 */
-	public function setLine(int $line = null);
+	public function setLine(?int $line = null);
 }

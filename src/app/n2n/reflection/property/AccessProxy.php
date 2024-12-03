@@ -68,8 +68,8 @@ interface AccessProxy {
 	 * @param TypeConstraint|null $setterConstraint
 	 * @return AccessProxy
 	 */
-	function createRestricted(TypeConstraint $getterConstraint = null,
-			TypeConstraint $setterConstraint = null): AccessProxy;
+	function createRestricted(?TypeConstraint $getterConstraint = null,
+			?TypeConstraint $setterConstraint = null): AccessProxy;
 
 	/**
 	 * @param object $object

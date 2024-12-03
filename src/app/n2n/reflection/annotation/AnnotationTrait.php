@@ -32,7 +32,7 @@ trait AnnotationTrait {
 		return $this->fileName;
 	}
 	
-	public function setFileName(string $fileName = null) {
+	public function setFileName(?string $fileName = null) {
 		$this->fileName = $fileName;
 		
 		foreach ($this->subAnnotations as $subAnnotation) {
@@ -44,7 +44,7 @@ trait AnnotationTrait {
 		return $this->line;
 	}
 	
-	public function setLine(int $line = null) {
+	public function setLine(?int $line = null) {
 		$this->line = $line;
 		
 		foreach ($this->subAnnotations as $subAnnotation) {

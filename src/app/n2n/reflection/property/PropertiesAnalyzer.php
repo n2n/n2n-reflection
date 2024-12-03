@@ -143,7 +143,7 @@ class PropertiesAnalyzer {
 	 * @throws \ReflectionException
 	 * @throws InaccessiblePropertyException
 	 */
-	private function getGetterMethod($propertyName, $required, \ReflectionProperty $property = null): ?\ReflectionMethod {
+	private function getGetterMethod($propertyName, $required, ?\ReflectionProperty $property = null): ?\ReflectionMethod {
 		$getterMethodName = 'get' . ucfirst($propertyName);
 		$testMethodName = 'is' . ucfirst($propertyName);
 		
@@ -190,7 +190,7 @@ class PropertiesAnalyzer {
 	 * @throws InvalidPropertyAccessMethodException
 	 * @throws \ReflectionException
 	 */
-	private function getSetterMethod($propertyName, $required, \ReflectionProperty $property = null) {
+	private function getSetterMethod($propertyName, $required, ?\ReflectionProperty $property = null) {
 		$setterMethodName = self::buildSetterName($propertyName);
 		
 		if (!$this->class->hasMethod($setterMethodName)) {
