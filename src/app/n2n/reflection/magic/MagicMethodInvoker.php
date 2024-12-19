@@ -30,6 +30,9 @@ use n2n\reflection\ReflectionError;
 use n2n\util\magic\MagicLookupFailedException;
 use n2n\reflection\ReflectionRuntimeException;
 
+/**
+ * @deprecated use {@link \n2n\util\magic\impl\MagicMethodInvoker}
+ */
 class MagicMethodInvoker {
 	private \ReflectionFunctionAbstract $method;
 	private $classParamObjects = array();
