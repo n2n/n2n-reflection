@@ -25,6 +25,7 @@ use n2n\reflection\ReflectionUtils;
 use n2n\util\type\TypeUtils;
 use n2n\util\type\TypeConstraint;
 use n2n\util\ex\IllegalStateException;
+use n2n\util\ex\ExUtils;
 
 class PropertiesAnalyzer {
 	private $class;
@@ -59,19 +60,21 @@ class PropertiesAnalyzer {
 	private function isFromThisClass($property) {
 		return $property->getDeclaringClass()->getName() == $this->class->getName(); 
 	}
-	
+
 	/**
 	 * @param bool $includePrivate
 	 * @param bool $checkIfAcessable
 	 * @return PropertyAccessProxy[]
+	 * @throws InaccessiblePropertyException
+	 * @throws InvalidPropertyAccessMethodException
 	 */
-	public function analyzeProperties(bool $includePrivate = false, bool $checkIfAcessable = true) {
+	public function analyzeProperties(bool $includePrivate = false, bool $checkIfAcessable = true): array {
 		$accessProxies = array();
 		
-		$visiblity = \ReflectionProperty::IS_PROTECTED|\ReflectionProperty::IS_PUBLIC;
-		if ($includePrivate) $visiblity = $visiblity|\ReflectionProperty::IS_PRIVATE;
+		$visibility = \ReflectionProperty::IS_PROTECTED|\ReflectionProperty::IS_PUBLIC;
+		if ($includePrivate) $visibility = $visibility|\ReflectionProperty::IS_PRIVATE;
 		
-		foreach ($this->class->getProperties($visiblity) as $property) {
+		foreach ($this->class->getProperties($visibility) as $property) {
 			if ($property->isStatic() || ($this->superIgnored && !$this->isFromThisClass($property))) {
 				continue;
 			}
@@ -103,13 +106,12 @@ class PropertiesAnalyzer {
 	 * @throws InaccessiblePropertyException
 	 * @throws InvalidPropertyAccessMethodException
 	 * @throws UnknownPropertyException
-	 * @throws \ReflectionException
 	 */
 	public function analyzeProperty($propertyName, bool $settingRequired = true, bool $gettingRequired = true,
 			bool $required = true): PropertyAccessProxy|null {
 		$property = null;
 		if ($this->class->hasProperty($propertyName)) {
-			$property = $this->class->getProperty($propertyName);
+			$property = ExUtils::try(fn () => $this->class->getProperty($propertyName));
 			if ($this->superIgnored && !$this->isFromThisClass($property)) {
 				$property = null;
 			}
@@ -140,17 +142,17 @@ class PropertiesAnalyzer {
 	}
 
 	/**
-	 * @throws \ReflectionException
 	 * @throws InaccessiblePropertyException
+	 * @throws  InvalidPropertyAccessMethodException
 	 */
 	private function getGetterMethod($propertyName, $required, ?\ReflectionProperty $property = null): ?\ReflectionMethod {
 		$getterMethodName = 'get' . ucfirst($propertyName);
 		$testMethodName = 'is' . ucfirst($propertyName);
 		
 		if ($this->class->hasMethod($getterMethodName)) {
-			$getterMethod = $this->class->getMethod($getterMethodName);
+			$getterMethod = ExUtils::try(fn () => $this->class->getMethod($getterMethodName));
 		} else if ($this->class->hasMethod($testMethodName)) {
-			$getterMethod = $this->class->getMethod($testMethodName);
+			$getterMethod = ExUtils::try(fn () => $this->class->getMethod($testMethodName));
 		} else if ($required){
 			throw new InaccessiblePropertyException($property, 'Getter method ('
 					. $getterMethodName . ' or ' . $testMethodName 
@@ -188,7 +190,6 @@ class PropertiesAnalyzer {
 	/**
 	 * @throws InaccessiblePropertyException
 	 * @throws InvalidPropertyAccessMethodException
-	 * @throws \ReflectionException
 	 */
 	private function getSetterMethod($propertyName, $required, ?\ReflectionProperty $property = null) {
 		$setterMethodName = self::buildSetterName($propertyName);
@@ -200,7 +201,7 @@ class PropertiesAnalyzer {
 					'Managed property setter method required: ' . TypeUtils::prettyClassMethName($this->class, $setterMethodName));
 		}
 	
-		$setterMethod = $this->class->getMethod($setterMethodName);
+		$setterMethod = ExUtils::try(fn () => $this->class->getMethod($setterMethodName));
 		if (!$setterMethod->isPublic()) {
 			if (!$required) return null;
 			
