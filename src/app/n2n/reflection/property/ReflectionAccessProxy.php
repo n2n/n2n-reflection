@@ -38,7 +38,7 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	private $getterMethod;
 	private $forcePropertyAccess;
 	private ?TypeConstraint $constraint = null;
-	private $nullReturnAllowed = false;
+	private bool $nullReturnAllowed = false;
 	private TypeConstraint $getterConstraint;
 	private TypeConstraint $setterConstraint;
 
@@ -50,11 +50,11 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 		$this->setterMethod = $setterMethod;
 	}
 
-	public function getBaseConstraint() {
+	public function getBaseConstraint(): ?TypeConstraint {
 		return $this->isWritable() ? $this->getSetterConstraint() : $this->getGetterConstraint();
 	}
 
-	public function isNullPossible() {
+	public function isNullPossible(): bool {
 		return $this->getBaseConstraint()->allowsNull();
 	}
 
@@ -97,13 +97,13 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	}
 	/**
 	 *
-	 * @return \n2n\util\type\TypeConstraint
+	 * @return TypeConstraint
 	 */
 	public function getConstraint(): TypeConstraint {
 		return $this->constraint ?? $this->getBaseConstraint();
 	}
 
-	public function setConstraint(TypeConstraint $constraint) {
+	public function setConstraint(TypeConstraint $constraint): void {
 		if ($constraint->isPassableTo($this->getBaseConstraint())) {
 			$this->constraint = $constraint;
 			return;
@@ -170,16 +170,16 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 		return $this->getterConstraint = TypeConstraints::type($typeNames);
 	}
 
-	public function setForcePropertyAccess($forcePropertyAccess) {
+	public function setForcePropertyAccess(bool $forcePropertyAccess): void {
 		$this->property->setAccessible((boolean) $forcePropertyAccess);
 		$this->forcePropertyAccess = (boolean) $forcePropertyAccess;
 	}
 
-	public function isPropertyAccessSetterMode() {
+	public function isPropertyAccessSetterMode(): bool {
 		return $this->forcePropertyAccess || null === $this->setterMethod;
 	}
 
-	public function isPropertyAccessGetterMode() {
+	public function isPropertyAccessGetterMode(): bool {
 		return $this->forcePropertyAccess || null === $this->getterMethod;
 	}
 
