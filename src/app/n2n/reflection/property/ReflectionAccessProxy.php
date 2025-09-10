@@ -22,14 +22,13 @@
 namespace n2n\reflection\property;
 
 use n2n\reflection\ReflectionUtils;
-use n2n\util\type\ArgUtils;
 use n2n\util\type\TypeUtils;
 use n2n\util\type\TypeConstraint;
 use n2n\util\type\ValueIncompatibleWithConstraintsException;
 use n2n\util\type\TypeConstraints;
-use n2n\util\ex\UnsupportedOperationException;
 use n2n\util\ex\IllegalStateException;
 use n2n\util\type\TypeName;
+use n2n\util\type\custom\Undefined;
 
 class ReflectionAccessProxy implements PropertyAccessProxy {
 	private $propertyName;
@@ -41,13 +40,16 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	private bool $nullReturnAllowed = false;
 	private TypeConstraint $getterConstraint;
 	private TypeConstraint $setterConstraint;
+	private ?UninitializedBehaviour $uninitializedBehaviour;
 
 	public function __construct($propertyName, ?\ReflectionProperty $property = null,
-			?\ReflectionMethod $getterMethod = null, ?\ReflectionMethod $setterMethod = null) {
+			?\ReflectionMethod $getterMethod = null, ?\ReflectionMethod $setterMethod = null,
+			?UninitializedBehaviour $uninitializedBehaviour = null) {
 		$this->propertyName = $propertyName;
 		$this->property = $property;
 		$this->getterMethod = $getterMethod;
 		$this->setterMethod = $setterMethod;
+		$this->uninitializedBehaviour = $uninitializedBehaviour;
 	}
 
 	public function getBaseConstraint(): ?TypeConstraint {
@@ -237,7 +239,11 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 			return;
 		}
 
-		$setterMethod = $this->findMethod($object, $this->setterMethod);
+		try {
+			$setterMethod = $this->findMethod($object, $this->setterMethod);
+		} catch (\ReflectionException|\TypeError $e) {
+			throw $this->createPropertyAccessWriteException($object, $e);
+		}
 		try {
 			$setterMethod->invoke($object, $value);
 		} catch (\ReflectionException $e) {
@@ -250,41 +256,97 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	 * @throws PropertyAccessException
 	 */
 	public function getValue(object $object): mixed {
-		$value = null;
-
-		if ($this->isPropertyAccessGetterMode()) {
-			try {
-				if ($this->property->isInitialized($object)){
-					$value = $this->property->getValue($object);
-				}
-			} catch (\ReflectionException $e) {
-				throw new PropertyAccessException('Could not get value of property '
-						.  $this->property->getDeclaringClass()->getName() . '::$'
-						. $this->property->getName() . ' (Read from object type ' . get_class($object) . ')', 0, $e);
-			}
-		} else {
-			$getterMethod = $this->findMethod($object, $this->getterMethod);
-			try {
-				$value = $getterMethod->invoke($object);
-			} catch (\ReflectionException $e) {
-				throw $this->createMethodInvokeException($getterMethod, $e, $object);
-			}
-		}
+		$value = $this->isPropertyAccessGetterMode()
+				? $this->propertyValue($object)
+				: $this->getterValue($object);
 
 		if ($this->constraint === null || ($value === null && $this->nullReturnAllowed)) {
 			return $value;
 		}
 
+		return $this->validateValue($value);
+	}
+
+	/**
+	 * @throws PropertyAccessException
+	 */
+	private function propertyValue(object $object): mixed {
+		if ($this->property->isInitialized($object)) {
+			return $this->property->getValue($object);
+		}
+		return $this->handleUninitializedProperty($object);
+	}
+
+	/**
+	 * @throws PropertyAccessException
+	 */
+	private function handleUninitializedProperty(object $object): ?Undefined {
+		switch ($this->uninitializedBehaviour) {
+			case UninitializedBehaviour::RETURN_UNDEFINED:
+				return Undefined::i();
+			case UninitializedBehaviour::RETURN_NULL:
+				return null;
+			case UninitializedBehaviour::THROW_EXCEPTION:
+				throw $this->createPropertyAccessException($object);
+			case UninitializedBehaviour::RETURN_UNDEFINED_IF_UNDEFINABLE:
+				if (TypeConstraints::type($this->property->getType())
+						->isPassableBy(TypeConstraints::type(Undefined::class))) {
+				return Undefined::i();
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * @throws PropertyAccessException
+	 */
+	private function getterValue(object $object): mixed {
 		try {
-			$value = $this->constraint->validate($value);
+			$getterMethod = $this->findMethod($object, $this->getterMethod);
+		} catch (\ReflectionException $e) {
+			throw $this->createPropertyAccessException($object, $e);
+		}
+
+		try {
+			return $getterMethod->invoke($object);
+		} catch (\ReflectionException $e) {
+			throw $this->createMethodInvokeException($getterMethod, $e, $object);
+		}
+	}
+
+	private function createPropertyAccessException(object $object, ?\Throwable $e = null): PropertyAccessException {
+		return new PropertyAccessException(
+				sprintf(
+						'Could not get value of property %s::$%s (Read from object type %s)',
+						$this->property->getDeclaringClass()->getName(),
+						$this->property->getName(),
+						get_class($object)
+				), 0, $e);
+	}
+
+	private function createPropertyAccessWriteException($object, ?\Throwable $e = null): PropertyAccessException {
+		return new PropertyAccessException(
+				sprintf(
+						'Could not write value of property %s::$%s (Read from object type %s)',
+						$this->property->getDeclaringClass()->getName(),
+						$this->property->getName(),
+						get_class($object)
+				), 0, $e);
+	}
+
+	private function validateValue(mixed $value): mixed {
+		try {
+			return $this->constraint->validate($value);
 		} catch (ValueIncompatibleWithConstraintsException $e) {
 			throw $this->createReturnedValueException($e);
 		}
-
-		return $value;
 	}
 
-	private function findMethod($object, \ReflectionMethod $method) {
+	/**
+	 * @throws \ReflectionException
+	 */
+	private function findMethod($object, \ReflectionMethod $method): \ReflectionMethod {
 		$declaringClass = $method->getDeclaringClass();
 		if (get_class($object) == $declaringClass->getName()) {
 			return $method;
@@ -298,6 +360,9 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 		return $objectClass->getMethod($method->getName());
 	}
 
+	/**
+	 * @throws PropertyAccessException
+	 */
 	public function createMethodInvokeException(\ReflectionMethod $method, \Exception $previous, $object = null) {
 		$message = 'Reflection execution of ' . TypeUtils::prettyReflMethName($method). ' failed.';
 

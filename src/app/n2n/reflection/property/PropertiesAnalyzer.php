@@ -31,12 +31,15 @@ class PropertiesAnalyzer {
 	private $class;
 	private $ignoreAccessMethods;
 	private $superIgnored;
+
 	/**
 	 * @param \ReflectionClass $class
 	 * @param bool $ignoreAccessMethods
 	 * @param bool $superIgnored
+	 * @param UninitializedBehaviour|null $uninitializedBehaviour
 	 */
-	public function __construct(\ReflectionClass $class, bool $ignoreAccessMethods = false, bool $superIgnored = true) {
+	public function __construct(\ReflectionClass $class, bool $ignoreAccessMethods = false,
+			bool $superIgnored = true, private ?UninitializedBehaviour $uninitializedBehaviour = null) {
 		$this->class = $class;
 		$this->ignoreAccessMethods = $ignoreAccessMethods;
 		$this->superIgnored = $superIgnored;
@@ -80,11 +83,13 @@ class PropertiesAnalyzer {
 			}
 			
 			if ($this->ignoreAccessMethods) {
-				$accessProxies[$property->getName()] = new ReflectionAccessProxy($property->getName(), $property, null, null);
+				$accessProxies[$property->getName()] = new ReflectionAccessProxy($property->getName(), $property,
+						null, null, $this->uninitializedBehaviour);
 			} else {
 				$accessProxies[$property->getName()] = new ReflectionAccessProxy($property->getName(), $property,
 						$this->getGetterMethod($property->getName(), $checkIfAcessable && !$property->isPublic(), $property),
-						$this->getSetterMethod($property->getName(), $checkIfAcessable && !$property->isPublic(), $property));
+						$this->getSetterMethod($property->getName(), $checkIfAcessable && !$property->isPublic(), $property),
+						$this->uninitializedBehaviour);
 			}
 		}	
 		return $accessProxies;
@@ -125,7 +130,8 @@ class PropertiesAnalyzer {
 		}
 		
 		if ($this->ignoreAccessMethods) {
-			return new ReflectionAccessProxy($propertyName, $property, null, null);
+			return new ReflectionAccessProxy($propertyName, $property, null, null,
+					$this->uninitializedBehaviour);
 		}
 
 		$setterMethod = $this->getSetterMethod($propertyName,
@@ -133,7 +139,8 @@ class PropertiesAnalyzer {
 		$getterMethod = $this->getGetterMethod($propertyName, ($property === null && $setterMethod === null)
 				|| (($property === null || !$property->isPublic()) && $gettingRequired), $property);
 
-		return new ReflectionAccessProxy($propertyName, $property, $getterMethod, $setterMethod);
+		return new ReflectionAccessProxy($propertyName, $property, $getterMethod, $setterMethod,
+				$this->uninitializedBehaviour);
 	}
 	
 	private function scoutForPropertyMethods($propertyName) {
