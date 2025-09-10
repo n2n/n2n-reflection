@@ -268,7 +268,11 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 			return $value;
 		}
 
-		return $this->validateValue($value);
+		try {
+			return $this->constraint->validate($value);
+		} catch (ValueIncompatibleWithConstraintsException $e) {
+			throw $this->createReturnedValueException($e);
+		}
 	}
 
 	/**
@@ -321,14 +325,6 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 								TypeUtils::prettyReflPropName($this->property),
 								get_class($object))
 						. ($reason !== null ? ' Reason: ' . $reason : ''), 0, $e);
-	}
-
-	private function validateValue(mixed $value): mixed {
-		try {
-			return $this->constraint->validate($value);
-		} catch (ValueIncompatibleWithConstraintsException $e) {
-			throw $this->createReturnedValueException($e);
-		}
 	}
 
 	private function findMethod($object, \ReflectionMethod $method): \ReflectionMethod {

@@ -36,10 +36,10 @@ class PropertiesAnalyzer {
 	 * @param \ReflectionClass $class
 	 * @param bool $ignoreAccessMethods
 	 * @param bool $superIgnored
-	 * @param UninitializedBehaviour|null $uninitializedBehaviour
+	 * @param UninitializedBehaviour $uninitializedBehaviour
 	 */
-	public function __construct(\ReflectionClass $class, bool $ignoreAccessMethods = false,
-			bool $superIgnored = true, private ?UninitializedBehaviour $uninitializedBehaviour = null) {
+	public function __construct(\ReflectionClass $class, bool $ignoreAccessMethods = false, bool $superIgnored = true,
+			private UninitializedBehaviour $uninitializedBehaviour = UninitializedBehaviour::THROW_EXCEPTION) {
 		$this->class = $class;
 		$this->ignoreAccessMethods = $ignoreAccessMethods;
 		$this->superIgnored = $superIgnored;
