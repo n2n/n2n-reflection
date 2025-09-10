@@ -29,6 +29,8 @@ use n2n\util\type\TypeConstraints;
 use n2n\util\ex\IllegalStateException;
 use n2n\util\type\TypeName;
 use n2n\util\type\custom\Undefined;
+use n2n\util\ex\ExUtils;
+use n2n\util\EnumUtils;
 
 class ReflectionAccessProxy implements PropertyAccessProxy {
 	private $propertyName;
@@ -40,16 +42,22 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	private bool $nullReturnAllowed = false;
 	private TypeConstraint $getterConstraint;
 	private TypeConstraint $setterConstraint;
-	private ?UninitializedBehaviour $uninitializedBehaviour;
+
+	private ?bool $propertyUndefinable = null;
 
 	public function __construct($propertyName, ?\ReflectionProperty $property = null,
 			?\ReflectionMethod $getterMethod = null, ?\ReflectionMethod $setterMethod = null,
-			?UninitializedBehaviour $uninitializedBehaviour = null) {
+			private UninitializedBehaviour $uninitializedBehaviour = UninitializedBehaviour::THROW_EXCEPTION) {
 		$this->propertyName = $propertyName;
 		$this->property = $property;
 		$this->getterMethod = $getterMethod;
 		$this->setterMethod = $setterMethod;
-		$this->uninitializedBehaviour = $uninitializedBehaviour;
+	}
+
+	private function isPropertyUndefinable(): bool {
+		return $this->propertyUndefinable
+				?? $this->propertyUndefinable = TypeConstraints::type($this->property->getType())
+						->isPassableBy(TypeConstraints::type(Undefined::class));
 	}
 
 	public function getBaseConstraint(): ?TypeConstraint {
@@ -239,11 +247,7 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 			return;
 		}
 
-		try {
-			$setterMethod = $this->findMethod($object, $this->setterMethod);
-		} catch (\ReflectionException|\TypeError $e) {
-			throw $this->createPropertyAccessWriteException($object, $e);
-		}
+		$setterMethod = $this->findMethod($object, $this->setterMethod);
 		try {
 			$setterMethod->invoke($object, $value);
 		} catch (\ReflectionException $e) {
@@ -257,8 +261,8 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	 */
 	public function getValue(object $object): mixed {
 		$value = $this->isPropertyAccessGetterMode()
-				? $this->propertyValue($object)
-				: $this->getterValue($object);
+				? $this->readPropertyValue($object)
+				: $this->readGetterValue($object);
 
 		if ($this->constraint === null || ($value === null && $this->nullReturnAllowed)) {
 			return $value;
@@ -270,44 +274,40 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	/**
 	 * @throws PropertyAccessException
 	 */
-	private function propertyValue(object $object): mixed {
+	private function readPropertyValue(object $object): mixed {
 		if ($this->property->isInitialized($object)) {
 			return $this->property->getValue($object);
 		}
-		return $this->handleUninitializedProperty($object);
+		return $this->handleUninitializedPropertyRead($object);
 	}
 
 	/**
 	 * @throws PropertyAccessException
 	 */
-	private function handleUninitializedProperty(object $object): ?Undefined {
+	private function handleUninitializedPropertyRead(object $object): ?Undefined {
 		switch ($this->uninitializedBehaviour) {
 			case UninitializedBehaviour::RETURN_UNDEFINED:
-				return Undefined::i();
+				return Undefined::val();
 			case UninitializedBehaviour::RETURN_NULL:
 				return null;
 			case UninitializedBehaviour::THROW_EXCEPTION:
-				throw $this->createPropertyAccessException($object);
+				throw $this->createPropertyAccessException($object, reason: 'Property is uninitialized.');
 			case UninitializedBehaviour::RETURN_UNDEFINED_IF_UNDEFINABLE:
-				if (TypeConstraints::type($this->property->getType())
-						->isPassableBy(TypeConstraints::type(Undefined::class))) {
-				return Undefined::i();
-			}
+				if ($this->isPropertyUndefinable()) {
+					return Undefined::val();
+				} else {
+					throw $this->createPropertyAccessException($object, reason: 'Property is uninitialized.');
+				}
 		}
 
-		return null;
+		throw new IllegalStateException('Unknown case ' . EnumUtils::unitToName($this->uninitializedBehaviour));
 	}
 
 	/**
 	 * @throws PropertyAccessException
 	 */
-	private function getterValue(object $object): mixed {
-		try {
-			$getterMethod = $this->findMethod($object, $this->getterMethod);
-		} catch (\ReflectionException $e) {
-			throw $this->createPropertyAccessException($object, $e);
-		}
-
+	private function readGetterValue(object $object): mixed {
+		$getterMethod = $this->findMethod($object, $this->getterMethod);
 		try {
 			return $getterMethod->invoke($object);
 		} catch (\ReflectionException $e) {
@@ -315,24 +315,12 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 		}
 	}
 
-	private function createPropertyAccessException(object $object, ?\Throwable $e = null): PropertyAccessException {
+	private function createPropertyAccessException(object $object, ?\Throwable $e = null, ?string $reason = null): PropertyAccessException {
 		return new PropertyAccessException(
-				sprintf(
-						'Could not get value of property %s::$%s (Read from object type %s)',
-						$this->property->getDeclaringClass()->getName(),
-						$this->property->getName(),
-						get_class($object)
-				), 0, $e);
-	}
-
-	private function createPropertyAccessWriteException($object, ?\Throwable $e = null): PropertyAccessException {
-		return new PropertyAccessException(
-				sprintf(
-						'Could not write value of property %s::$%s (Read from object type %s)',
-						$this->property->getDeclaringClass()->getName(),
-						$this->property->getName(),
-						get_class($object)
-				), 0, $e);
+				sprintf('Could not get value of property %s (Read from object type %s)',
+								TypeUtils::prettyReflPropName($this->property),
+								get_class($object))
+						. ($reason !== null ? ' Reason: ' . $reason : ''), 0, $e);
 	}
 
 	private function validateValue(mixed $value): mixed {
@@ -343,9 +331,6 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 		}
 	}
 
-	/**
-	 * @throws \ReflectionException
-	 */
 	private function findMethod($object, \ReflectionMethod $method): \ReflectionMethod {
 		$declaringClass = $method->getDeclaringClass();
 		if (get_class($object) == $declaringClass->getName()) {
@@ -357,7 +342,7 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 			return $method;
 		}
 
-		return $objectClass->getMethod($method->getName());
+		return ExUtils::try(fn () => $objectClass->getMethod($method->getName()));
 	}
 
 	/**
