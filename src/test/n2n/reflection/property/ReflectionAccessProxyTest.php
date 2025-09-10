@@ -28,7 +28,7 @@ class ReflectionAccessProxyTest extends TestCase {
 
             private ?string $privateNullableString = null;
 
-            private string $privateString = '';
+            private string $privateString = 'val';
 
             public function __construct() {
                 $this->publicReadonlyInt = 1;
@@ -120,7 +120,7 @@ class ReflectionAccessProxyTest extends TestCase {
         $ap = new ReflectionAccessProxy('publicUninitializedString', $prop, null, null, UninitializedBehaviour::RETURN_UNDEFINED);
         $value = $ap->getValue($this->testClass);
         $this->assertInstanceOf(Undefined::class, $value);
-        $this->assertSame(Undefined::i(), $value);
+        $this->assertSame(Undefined::val(), $value);
     }
 
 	/**
@@ -147,7 +147,8 @@ class ReflectionAccessProxyTest extends TestCase {
         // Property explicitly allows Undefined in union type
         $prop = $class->getProperty('publicUndefinedableString');
 
-        $ap = new ReflectionAccessProxy('publicUndefinedableString', $prop, null, null, UninitializedBehaviour::RETURN_UNDEFINED_IF_UNDEFINABLE);
+        $ap = new ReflectionAccessProxy('publicUndefinedableString', $prop, null, null,
+				UninitializedBehaviour::RETURN_UNDEFINED_IF_UNDEFINABLE);
         $value = $ap->getValue($this->testClass);
         $this->assertInstanceOf(Undefined::class, $value);
     }

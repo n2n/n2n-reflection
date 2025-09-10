@@ -113,6 +113,12 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 		return $this->constraint ?? $this->getBaseConstraint();
 	}
 
+	/**
+	 * @param TypeConstraint $constraint
+	 * @return void
+	 * @throws ConstraintsConflictException
+	 * @deprecated use {@link self::createRestricted()}
+	 */
 	public function setConstraint(TypeConstraint $constraint): void {
 		if ($constraint->isPassableTo($this->getBaseConstraint())) {
 			$this->constraint = $constraint;

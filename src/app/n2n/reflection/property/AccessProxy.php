@@ -36,7 +36,7 @@ interface AccessProxy {
 	/**
 	 * @param TypeConstraint $constraint
 	 * @throws ConstraintsConflictException
-	 * @deprecated
+	 * @deprecated use {@link self::createRestricted()}
 	 */
 	public function setConstraint(TypeConstraint $constraint);
 
