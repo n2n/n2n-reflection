@@ -150,6 +150,10 @@ class MagicMethodInvoker {
 				$args[] = $obj;
 				continue;
 			}
+
+			if ($parameter->isVariadic()) {
+				continue;
+			}
 			
 			$previousE = null;
 			try {
