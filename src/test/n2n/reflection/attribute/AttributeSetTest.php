@@ -5,6 +5,8 @@ use n2n\reflection\attribute\mock\AttrA;
 use n2n\reflection\attribute\mock\AttrB;
 use n2n\reflection\attribute\mock\AttrC;
 use n2n\reflection\attribute\mock\MockClass;
+use n2n\reflection\attribute\mock\MockSubClass;
+use n2n\reflection\attribute\mock\MockSubSubClass;
 use n2n\reflection\attribute\mock\PreSuffix;
 use PHPUnit\Framework\TestCase;
 use n2n\reflection\ReflectionRuntimeException;
@@ -286,5 +288,84 @@ class AttributeSetTest extends TestCase {
 	public function testHasMethodAttributeWithNonExistentMethod() {
 		$this->expectException(ReflectionRuntimeException::class);
 		$this->attributeSet->hasMethodAttribute('nonExistentMethod', AttrA::class);
+	}
+
+	private static function propertyNames(array $propertyAttributes): array {
+		$names = array_map(fn (PropertyAttribute $a) => $a->getProperty()->getName(), $propertyAttributes);
+		sort($names);
+		return array_values(array_unique($names));
+	}
+
+	private static function methodNames(array $methodAttributes): array {
+		$names = array_map(fn (MethodAttribute $a) => $a->getMethod()->getName(), $methodAttributes);
+		sort($names);
+		return array_values(array_unique($names));
+	}
+
+	public function testPropertyAttributesParentsIncluded() {
+		$attributeSet = new AttributeSet(new \ReflectionClass(MockSubClass::class));
+
+		$this->assertEquals(['subKey', 'subProperty'], self::propertyNames($attributeSet->getPropertyAttributes()));
+		$this->assertEquals(['subKey', 'subProperty'],
+				self::propertyNames($attributeSet->getPropertyAttributes(false)));
+		$this->assertEmpty(array_diff(['protectedProperty', 'publicProperty', 'subKey', 'subProperty'],
+				self::propertyNames($attributeSet->getPropertyAttributes(true))));
+
+		$this->assertEmpty($attributeSet->getPropertyAttributesByName(AttrA::class));
+		$this->assertEquals(['publicProperty'],
+				self::propertyNames($attributeSet->getPropertyAttributesByName(AttrA::class, true)));
+		$this->assertEquals(['subProperty'],
+				self::propertyNames($attributeSet->getPropertyAttributesByName(AttrC::class)));
+
+		$this->assertNull($attributeSet->getPropertyAttribute('publicProperty', AttrA::class));
+		$this->assertFalse($attributeSet->hasPropertyAttribute('publicProperty', AttrA::class));
+		$this->assertNotNull($attributeSet->getPropertyAttribute('publicProperty', AttrA::class, true));
+		$this->assertTrue($attributeSet->hasPropertyAttribute('publicProperty', AttrA::class, true));
+		$this->assertTrue($attributeSet->hasPropertyAttribute('subProperty', AttrC::class));
+		$this->assertTrue($attributeSet->hasPropertyAttribute('subKey', PreSuffix::class));
+
+		$this->assertFalse($attributeSet->containsPropertyAttributeName(AttrB::class));
+		$this->assertTrue($attributeSet->containsPropertyAttributeName(AttrB::class, true));
+		$this->assertTrue($attributeSet->containsPropertyAttributeName(AttrC::class));
+	}
+
+	public function testMethodAttributesParentsIncluded() {
+		$attributeSet = new AttributeSet(new \ReflectionClass(MockSubClass::class));
+
+		$this->assertEquals(['protectedMethod', 'subMethod'], self::methodNames($attributeSet->getMethodAttributes()));
+		$this->assertEquals(['protectedMethod', 'publicMethod', 'subMethod'],
+				self::methodNames($attributeSet->getMethodAttributes(true)));
+
+		$this->assertEmpty($attributeSet->getMethodAttributesByName(AttrA::class));
+		$this->assertEquals(['publicMethod'],
+				self::methodNames($attributeSet->getMethodAttributesByName(AttrA::class, true)));
+		// overridden method is declared in sub class
+		$this->assertEquals(['protectedMethod', 'subMethod'],
+				self::methodNames($attributeSet->getMethodAttributesByName(AttrC::class)));
+
+		$this->assertNull($attributeSet->getMethodAttribute('publicMethod', AttrA::class));
+		$this->assertFalse($attributeSet->hasMethodAttribute('publicMethod', AttrA::class));
+		$this->assertNotNull($attributeSet->getMethodAttribute('publicMethod', AttrA::class, true));
+		$this->assertTrue($attributeSet->hasMethodAttribute('publicMethod', AttrA::class, true));
+		$this->assertTrue($attributeSet->hasMethodAttribute('protectedMethod', AttrC::class));
+
+		$this->assertFalse($attributeSet->containsMethodAttributeName(AttrA::class));
+		$this->assertTrue($attributeSet->containsMethodAttributeName(AttrA::class, true));
+	}
+
+	public function testSubSubClassParentsIncluded() {
+		$attributeSet = new AttributeSet(new \ReflectionClass(MockSubSubClass::class));
+
+		$this->assertEmpty($attributeSet->getPropertyAttributes());
+		$this->assertEmpty($attributeSet->getMethodAttributes());
+		$this->assertNull($attributeSet->getPropertyAttribute('subProperty', AttrC::class));
+		$this->assertNull($attributeSet->getMethodAttribute('subMethod', AttrC::class));
+
+		$this->assertEquals(['protectedProperty', 'publicProperty', 'subProperty'], array_values(array_diff(
+				self::propertyNames($attributeSet->getPropertyAttributes(true)), ['key', 'subKey'])));
+		$this->assertEquals(['protectedMethod', 'publicMethod', 'subMethod'],
+				self::methodNames($attributeSet->getMethodAttributes(true)));
+		$this->assertNotNull($attributeSet->getPropertyAttribute('subProperty', AttrC::class, true));
+		$this->assertNotNull($attributeSet->getMethodAttribute('subMethod', AttrC::class, true));
 	}
 }

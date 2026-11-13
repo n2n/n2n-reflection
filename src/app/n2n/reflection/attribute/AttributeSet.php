@@ -69,42 +69,54 @@ class AttributeSet {
 	}
 
 	/**
+	 * @param bool $parentsIncluded if false, attributes of properties declared in parent classes are omitted
 	 * @return PropertyAttribute[]
 	 */
-	public function getPropertyAttributes(): array {
+	public function getPropertyAttributes(bool $parentsIncluded = false): array {
 		if (!$this->isLoaded(self::TYPE_PROPERTY)) {
 			$this->loadType(self::TYPE_PROPERTY);
 		}
 
-		return $this->unGroup($this->attributes[self::TYPE_PROPERTY]);
+		return array_values($this->filterByDeclaringClass($this->unGroup($this->attributes[self::TYPE_PROPERTY]),
+				$parentsIncluded));
 	}
 
 	/**
 	 * @param string $attributeName
+	 * @param bool $parentsIncluded if false, attributes of properties declared in parent classes are omitted
 	 * @return PropertyAttribute[]
 	 */
-	public function getPropertyAttributesByName(string $attributeName): array {
-		return $this->loadAttributes(self::TYPE_PROPERTY, $attributeName);
+	public function getPropertyAttributesByName(string $attributeName, bool $parentsIncluded = false): array {
+		return $this->filterByDeclaringClass($this->loadAttributes(self::TYPE_PROPERTY, $attributeName),
+				$parentsIncluded);
 	}
 
 	/**
 	 * @param string $propertyName
 	 * @param string $attributeName
+	 * @param bool $parentsIncluded if false, properties declared in parent classes are omitted
      * @throws ReflectionRuntimeException
 	 * @return boolean
 	 */
-	public function hasPropertyAttribute(string $propertyName, string $attributeName): bool {
-		return null !== $this->getPropertyAttribute($propertyName, $attributeName);
+	public function hasPropertyAttribute(string $propertyName, string $attributeName,
+			bool $parentsIncluded = false): bool {
+		return null !== $this->getPropertyAttribute($propertyName, $attributeName, $parentsIncluded);
 	}
 
 	/**
 	 * @param string $propertyName
 	 * @param string $attributeName
+	 * @param bool $parentsIncluded if false, properties declared in parent classes are omitted
      * @throws ReflectionRuntimeException
      * @return PropertyAttribute|null
 	 */
-	public function getPropertyAttribute(string $propertyName, string $attributeName): PropertyAttribute|null {
+	public function getPropertyAttribute(string $propertyName, string $attributeName,
+			bool $parentsIncluded = false): PropertyAttribute|null {
 		$property = ReflectionRuntimeException::try(fn() => $this->class->getProperty($propertyName));
+		if (!$parentsIncluded && !$this->isDeclaredInClass($property)) {
+			return null;
+		}
+
 		$propertyAttribute = $this->loadAttributeFromReflector(self::TYPE_PROPERTY, $attributeName, $property);
 
 		if ($propertyAttribute === null) return null;
@@ -114,10 +126,11 @@ class AttributeSet {
 	}
 	/**
 	 * @param string $name
+	 * @param bool $parentsIncluded if false, attributes of properties declared in parent classes are omitted
 	 * @return boolean
 	 */
-	public function containsPropertyAttributeName(string $name): bool {
-		return 0 !== count($this->loadAttributes(self::TYPE_PROPERTY, $name));
+	public function containsPropertyAttributeName(string $name, bool $parentsIncluded = false): bool {
+		return 0 !== count($this->getPropertyAttributesByName($name, $parentsIncluded));
 	}
 
     /**
@@ -171,42 +184,53 @@ class AttributeSet {
     }
 
 	/**
+	 * @param bool $parentsIncluded if false, attributes of methods declared in parent classes are omitted
 	 * @return MethodAttribute[]
 	 */
-	public function getMethodAttributes(): array {
+	public function getMethodAttributes(bool $parentsIncluded = false): array {
 		if (!$this->isLoaded(self::TYPE_METHOD)) {
 			$this->loadType(self::TYPE_METHOD);
 		}
 
-		return $this->unGroup($this->attributes[self::TYPE_METHOD]);
+		return array_values($this->filterByDeclaringClass($this->unGroup($this->attributes[self::TYPE_METHOD]),
+				$parentsIncluded));
 	}
 
 	/**
 	 * @param string $name
+	 * @param bool $parentsIncluded if false, attributes of methods declared in parent classes are omitted
      * @return MethodAttribute[]
 	 */
-	public function getMethodAttributesByName(string $name): array {
-		return $this->loadAttributes(self::TYPE_METHOD, $name);
+	public function getMethodAttributesByName(string $name, bool $parentsIncluded = false): array {
+		return $this->filterByDeclaringClass($this->loadAttributes(self::TYPE_METHOD, $name), $parentsIncluded);
 	}
 
 	/**
 	 * @param string $methodName
 	 * @param string $attributeName
+	 * @param bool $parentsIncluded if false, methods declared in parent classes are omitted
      * @throws ReflectionRuntimeException
 	 * @return boolean
 	 */
-	public function hasMethodAttribute(string $methodName, string $attributeName): bool {
-		return null !== $this->getMethodAttribute($methodName, $attributeName);
+	public function hasMethodAttribute(string $methodName, string $attributeName,
+			bool $parentsIncluded = false): bool {
+		return null !== $this->getMethodAttribute($methodName, $attributeName, $parentsIncluded);
 	}
 
 	/**
 	 * @param string $methodName
 	 * @param string $attributeName
+	 * @param bool $parentsIncluded if false, methods declared in parent classes are omitted
      * @throws ReflectionRuntimeException
      * @return MethodAttribute|null
 	 */
-	public function getMethodAttribute(string $methodName, string $attributeName): MethodAttribute|null {
+	public function getMethodAttribute(string $methodName, string $attributeName,
+			bool $parentsIncluded = false): MethodAttribute|null {
 		$method = ReflectionRuntimeException::try(fn() => $this->class->getMethod($methodName));
+		if (!$parentsIncluded && !$this->isDeclaredInClass($method)) {
+			return null;
+		}
+
 		$methodAttribute = $this->loadAttributeFromReflector(self::TYPE_METHOD, $attributeName, $method);
 
 		if ($methodAttribute === null) return null;
@@ -217,10 +241,38 @@ class AttributeSet {
 
 	/**
 	 * @param string $attributeName
+	 * @param bool $parentsIncluded if false, attributes of methods declared in parent classes are omitted
 	 * @return boolean
 	 */
-	public function containsMethodAttributeName(string $attributeName): bool {
-		return 0 !== count($this->loadAttributes(self::TYPE_METHOD, $attributeName));
+	public function containsMethodAttributeName(string $attributeName, bool $parentsIncluded = false): bool {
+		return 0 !== count($this->getMethodAttributesByName($attributeName, $parentsIncluded));
+	}
+
+	/**
+	 * @param PropertyAttribute[]|MethodAttribute[] $attributes
+	 * @param bool $parentsIncluded
+	 * @return PropertyAttribute[]|MethodAttribute[]
+	 */
+	private function filterByDeclaringClass(array $attributes, bool $parentsIncluded): array {
+		if ($parentsIncluded) {
+			return $attributes;
+		}
+
+		return array_filter($attributes, function (Attribute $attribute) {
+			if ($attribute instanceof PropertyAttribute) {
+				return $this->isDeclaredInClass($attribute->getProperty());
+			}
+
+			if ($attribute instanceof MethodAttribute) {
+				return $this->isDeclaredInClass($attribute->getMethod());
+			}
+
+			return true;
+		});
+	}
+
+	private function isDeclaredInClass(\ReflectionProperty|\ReflectionMethod $reflector): bool {
+		return $reflector->getDeclaringClass()->getName() === $this->class->getName();
 	}
 
     /**
