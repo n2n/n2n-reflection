@@ -51,7 +51,6 @@ class AnnotationSetFactory {
 					. '(n2n\reflection\annotation\AnnoInit);', $method->getFileName(), $method->getStartLine());
 		}
 		
-		$method->setAccessible(true);
 		try {
 			$method->invoke(null, new AnnoInit($class, $annotationSet));
 		} catch (\InvalidArgumentException $e) {

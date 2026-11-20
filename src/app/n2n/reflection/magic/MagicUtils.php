@@ -78,7 +78,6 @@ class MagicUtils {
 		foreach ($methods as $method) {
 			self::validateMagicMethodSignature($method);
 				
-			$method->setAccessible(true);
 			try {
 				$methodInvoker->invoke($object, $method);
 			} catch (CanNotFillParameterException|ReflectionError $e) {

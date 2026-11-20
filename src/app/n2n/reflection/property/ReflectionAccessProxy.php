@@ -187,8 +187,7 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	}
 
 	public function setForcePropertyAccess(bool $forcePropertyAccess): void {
-		$this->property->setAccessible((boolean) $forcePropertyAccess);
-		$this->forcePropertyAccess = (boolean) $forcePropertyAccess;
+		$this->forcePropertyAccess = (bool) $forcePropertyAccess;
 	}
 
 	public function isPropertyAccessSetterMode(): bool {

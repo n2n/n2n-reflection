@@ -66,7 +66,7 @@ class TypeExpressionResolver {
 					}
 					
 					array_pop($resolvedPathParts);
-				case '.';
+				case '.':
 					break;
 				default:
 					$resolvedPathParts[] = $pathPart;

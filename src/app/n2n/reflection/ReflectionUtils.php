@@ -226,7 +226,7 @@ class ReflectionUtils {
 	}
 	
 	public static function isObjectA($object, ?\ReflectionClass $isAClass = null) {
-		return /*is_object($object) &&*/ $isAClass !== null && is_a($object, $isAClass->getName());
+		return $isAClass !== null && $object instanceof ($isAClass->getName());
 	}
 	
 	// 	public static function unserialize($serializedStr) {
