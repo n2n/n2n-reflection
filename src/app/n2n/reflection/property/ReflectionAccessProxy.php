@@ -186,6 +186,9 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 		return $this->getterConstraint = TypeConstraints::type($typeNames);
 	}
 
+	/**
+	 * raw access
+	 */
 	public function setForcePropertyAccess(bool $forcePropertyAccess): void {
 		$this->forcePropertyAccess = (bool) $forcePropertyAccess;
 	}
@@ -242,7 +245,11 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 
 		if ($this->isPropertyAccessSetterMode()) {
 			try {
-				$this->property->setValue($object, $value);
+				if ($this->forcePropertyAccess) {
+					$this->property->setRawValue($object, $value);
+				} else {
+					$this->property->setValue($object, $value);
+				}
 			} catch (\ReflectionException|\TypeError $e) {
 				throw new PropertyAccessException('Could not set value for property. Reason: ' . $e->getMessage()
 						. $this->property->getDeclaringClass()->getName() . '::$'
@@ -284,10 +291,15 @@ class ReflectionAccessProxy implements PropertyAccessProxy {
 	 * @throws PropertyAccessException
 	 */
 	private function readPropertyValue(object $object): mixed {
-		if ($this->property->isInitialized($object)) {
+		if (!$this->property->isInitialized($object)) {
+			return $this->handleUninitializedPropertyRead($object);
+		}
+
+		if ($this->forcePropertyAccess) {
+			return $this->property->getRawValue($object);
+		} else {
 			return $this->property->getValue($object);
 		}
-		return $this->handleUninitializedPropertyRead($object);
 	}
 
 	/**
